@@ -1,0 +1,5 @@
+DELETE
+FROM {{ parameters.target }}
+{% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
+WHERE {{ parameters.whereClause }}
+{% endif %}

@@ -1,0 +1,10 @@
+COPY INTO {{ parameters.fileName }} 
+FROM (SELECT * 
+        FROM {{ parameters.tableName }}
+{% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
+       WHERE {{ parameters.whereClause }}
+{% endif %}
+      )
+FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
+SINGLE = TRUE
+OVERWRITE = TRUE

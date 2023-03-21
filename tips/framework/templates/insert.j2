@@ -1,0 +1,20 @@
+INSERT 
+{% if parameters.isOverwrite %}
+OVERWRITE
+{% endif %}
+INTO {{ parameters.target }}
+{% if parameters.fieldList is defined and parameters.fieldList != None and parameters.fieldList != '' %}
+({{ parameters.fieldList }})
+{% endif %}
+SELECT 
+{% if parameters.selectList is defined and parameters.selectList != None and parameters.selectList != '' %}
+{{ parameters.selectList }}
+{% elif parameters.fieldList is defined and parameters.fieldList != None and parameters.fieldList != '' %}
+{{ parameters.fieldList }}
+{% else %}
+*
+{% endif %}
+FROM {{ parameters.source }}
+{% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
+WHERE {{ parameters.whereClause }}
+{% endif %}

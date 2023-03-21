@@ -1,0 +1,17 @@
+MERGE 
+INTO {{ parameters.target }} t
+USING (SELECT {{ parameters.selectList }} 
+FROM {{ parameters.source }} 
+{% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
+WHERE {{ parameters.whereClause }}
+{% endif %}
+) s
+{% if parameters.mergeOnFieldList is defined and parameters.mergeOnFieldList != None and parameters.mergeOnFieldList != '' %}
+ON {{ parameters.mergeOnFieldList }}
+{% endif %}
+{% if parameters.updateFieldList is defined and parameters.updateFieldList != None and parameters.updateFieldList != '' %}
+WHEN MATCHED THEN UPDATE SET {{ parameters.updateFieldList }}
+{% endif %}
+{% if parameters.insertFieldList is defined and parameters.insertFieldList != None and parameters.insertFieldList != '' %}
+WHEN NOT MATCHED THEN INSERT ({{ parameters.insertFieldList }}) VALUES ({{ parameters.valueFieldList }})
+{% endif %}

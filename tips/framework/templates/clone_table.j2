@@ -1,0 +1,6 @@
+{% if parameters.source == parameters.target %}
+CALL CREATE_TEMPORARY_TABLE('{{ parameters.target }}', '{{ parameters.source }}')
+{% else %}
+CREATE OR REPLACE 
+TABLE {{ parameters.target }} LIKE {{ parameters.source }}
+{% endif %}

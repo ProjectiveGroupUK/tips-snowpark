@@ -1,0 +1,14 @@
+SELECT {{ parameters.selectFieldClause }}
+FROM {{ parameters.source }}
+{% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
+WHERE {{ parameters.whereClause }}
+{% endif %}
+{% if parameters.groupByClause is defined and parameters.groupByClause != None and parameters.groupByClause != '' %}
+GROUP BY {{ parameters.groupByClause }}
+{% endif %}
+{% if parameters.havingClause is defined and parameters.havingClause != None and parameters.havingClause != '' %}
+HAVING {{ parameters.havingClause }}
+{% endif %}
+{% if parameters.orderByClause is defined and parameters.orderByClause != None and parameters.orderByClause != '' %}
+ORDER BY {{ parameters.orderByClause }}
+{% endif %}

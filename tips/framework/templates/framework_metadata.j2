@@ -1,0 +1,28 @@
+SELECT p.process_id,
+       p.process_name,
+       NVL(p.process_description,'') process_description,
+       NVL(p.active,'N') process_active,
+       c.process_cmd_id,
+       c.cmd_type,
+       NVL(c.cmd_src,'') cmd_src,
+       NVL(c.cmd_tgt,'') cmd_tgt,
+       NVL(c.cmd_where,'') cmd_where,
+       NVL(c.cmd_binds,'') cmd_binds,
+       c.refresh_type,
+       NVL(c.business_key,'') business_key,
+       NVL(c.merge_on_fields,'') merge_on_fields,
+       NVL(c.generate_merge_matched_clause,'') generate_merge_matched_clause,
+       NVL(c.generate_merge_non_matched_clause,'') generate_merge_non_matched_clause,
+       NVL(c.additional_fields,'') additional_fields,
+       c.TEMP_TABLE,
+       c.cmd_pivot_by,
+       c.cmd_pivot_field,
+       NVL(c.dq_type,'') dq_type,
+       NVL(c.cmd_external_call,'') cmd_external_call,
+       NVL(c.active,'N') active
+  FROM tips_md_schema.process P
+  JOIN tips_md_schema.process_cmd c ON p.process_id = c.process_id
+  {% if parameters.process_name != "ALL" %}
+  WHERE p.process_name = '{{ parameters.process_name }}'
+  {% endif %}
+ ORDER BY p.process_id, c.process_cmd_id
