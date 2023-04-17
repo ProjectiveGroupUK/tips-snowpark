@@ -49,6 +49,8 @@ class App:
     def main(self) -> None:
         logger.debug("Inside framework app main")
 
+        runFramework: dict = {}  ##Just initialise it
+
         if self._addLogFileHandler:
             Logger().addFileHandler(processName=self._processName)
 
@@ -60,9 +62,10 @@ class App:
             frameworkMetaData: List[Dict] = framework.getMetaData(session=self._session)
 
             if len(frameworkMetaData) <= 0:
-                logger.error(
-                    "Could not fetch Metadata. Please make sure correct process name is passed and metadata setup has been done correctly first!"
-                )
+                err = "Could not fetch Metadata. Please make sure correct process name is passed and metadata setup has been done correctly first!"
+                logger.error(err)
+                runFramework["status"] = "ERROR"
+                runFramework["error_message"] = err
             else:
                 logger.info("Fetched Framework Metadata!")
                 processStartTime = start_dt
@@ -89,7 +92,9 @@ class App:
                     frameworkMetaData=frameworkMetaData,
                     frameworkDQMetaData=frameworkDQMetaData,
                 )
-                Logger().writeResultJson(runFramework)
+                
+                if self._addLogFileHandler:
+                    Logger().writeResultJson(runFramework)
 
                 # Now insert process run log to database
                 processEndTime = datetime.now()
@@ -157,11 +162,13 @@ class App:
                 warning_message = runFramework.get("warning_message")
                 logger.warning(warning_message)
 
+            return runFramework
         except Exception as ex:
             logger.error(ex)
             raise
         finally:
-            Logger().removeFileHandler()
+            if self._addLogFileHandler:
+                Logger().removeFileHandler()
 
 
 def run(session, process_name: str, vars: str, execute_flag: str) -> Dict:

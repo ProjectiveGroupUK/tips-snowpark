@@ -199,22 +199,22 @@ class SQLRunner(Runner):
 
                     frameworkRunner.dqTestLogList.append(dqLog)
 
-                    ## Now check if it was a query and there are any conditions to check
-                    if sql.getSqlChecks() is not None and len(sql.getSqlChecks()) > 0:
-                        for chk in sql.getSqlChecks():
-                            for result in results:
-                                sqlJson["cmd_status"]["CHECK_CONDITION"] = chk[
-                                    "condition"
-                                ]
-                                if eval(f"result{chk['condition']}"):
-                                    sqlJson["cmd_status"][
-                                        "CHECK_CONDITION_STATUS"
-                                    ] = "FAILED"
-                                    raise ValueError(chk["error"])
-                                else:
-                                    sqlJson["cmd_status"][
-                                        "CHECK_CONDITION_STATUS"
-                                    ] = "PASSED"
+                ## Now check if it was a query and there are any conditions to check
+                if sql.getSqlChecks() is not None and len(sql.getSqlChecks()) > 0:
+                    for chk in sql.getSqlChecks():
+                        for result in results:
+                            sqlJson["cmd_status"]["CHECK_CONDITION"] = chk[
+                                "condition"
+                            ]
+                            if eval(f"result{chk['condition']}"):
+                                sqlJson["cmd_status"][
+                                    "CHECK_CONDITION_STATUS"
+                                ] = "FAILED"
+                                raise ValueError(chk["error"])
+                            else:
+                                sqlJson["cmd_status"][
+                                    "CHECK_CONDITION_STATUS"
+                                ] = "PASSED"
 
             except Exception as err:
                 sqlJson["status"] = "ERROR"

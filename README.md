@@ -45,7 +45,7 @@ snowsql -c tips_user
 And then following command can be run from within snowsql to upload the zip file to the named stage
 * Please make changes to below command as appropriate for your setup *
 ```
-put file:///GitHub/transformation-framework-snowpark/tips.zip @tips auto_compress=false overwrite=true;
+put file:///GitHub/tips-snowpark/tips.zip @tips auto_compress=false overwrite=true;
 ```
 After uploading the zip file to named stage, you need to compile 2 stored procedures (available inside stored_procedure_stub folder) in your database:
 1) create_temporary_table.sql
