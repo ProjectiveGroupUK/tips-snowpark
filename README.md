@@ -6,7 +6,7 @@ TiPS (Transformation in Pure SQL) is a transformation framework developed by Pro
 When testing the changes through scripts in test folder (i.e. run_process_log.py and run_process_sp.py), you would need to set
 you would need to set PYTHONPATH enviroment variable, with path that of your github folder e.g.
 ```
-export PYTHONPATH=/c/GitHub/transformation-framework-snowpark
+export PYTHONPATH=/c/GitHub/tips-snowpark
 ```
 for relative paths in imports to work
 

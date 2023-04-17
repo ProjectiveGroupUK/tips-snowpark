@@ -1,10 +1,7 @@
-from jinja2 import Environment, FileSystemLoader, PackageLoader
-from pathlib import Path
+from jinja2 import Environment, PackageLoader
 import os
 from typing import Dict
 import re
-import pathlib
-
 
 class SQLTemplate:
 

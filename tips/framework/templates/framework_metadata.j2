@@ -1,27 +1,36 @@
+WITH flatten_cmd_binds AS
+(
+    SELECT a.process_id, ARRAY_UNIQUE_AGG(TRIM(b.value)) bind_var_list
+      FROM process_cmd a,
+      LATERAL split_to_table(a.cmd_binds,'|') b
+    GROUP BY a.process_id
+)
 SELECT p.process_id,
        p.process_name,
-       NVL(p.process_description,'') process_description,
-       NVL(p.active,'N') process_active,
+       p.process_description,
+       NVL(p.active,'N') AS process_active,
        c.process_cmd_id,
        c.cmd_type,
-       NVL(c.cmd_src,'') cmd_src,
-       NVL(c.cmd_tgt,'') cmd_tgt,
-       NVL(c.cmd_where,'') cmd_where,
-       NVL(c.cmd_binds,'') cmd_binds,
+       c.cmd_src,
+       c.cmd_tgt,
+       c.cmd_where,
+       c.cmd_binds,
        c.refresh_type,
-       NVL(c.business_key,'') business_key,
-       NVL(c.merge_on_fields,'') merge_on_fields,
-       NVL(c.generate_merge_matched_clause,'') generate_merge_matched_clause,
-       NVL(c.generate_merge_non_matched_clause,'') generate_merge_non_matched_clause,
-       NVL(c.additional_fields,'') additional_fields,
+       c.business_key,
+       c.merge_on_fields,
+       c.generate_merge_matched_clause,
+       c.generate_merge_non_matched_clause,
+       c.additional_fields,
        c.TEMP_TABLE,
        c.cmd_pivot_by,
        c.cmd_pivot_field,
-       NVL(c.dq_type,'') dq_type,
-       NVL(c.cmd_external_call,'') cmd_external_call,
-       NVL(c.active,'N') active
+       c.dq_type,
+       c.cmd_external_call,
+       NVL(c.active,'N') AS active,
+       NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars
   FROM tips_md_schema.process P
-  JOIN tips_md_schema.process_cmd c ON p.process_id = c.process_id
+  LEFT JOIN tips_md_schema.process_cmd c ON p.process_id = c.process_id
+  LEFT JOIN flatten_cmd_binds fcb ON p.process_id = fcb.process_id
   {% if parameters.process_name != "ALL" %}
   WHERE p.process_name = '{{ parameters.process_name }}'
   {% endif %}
