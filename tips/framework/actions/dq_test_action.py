@@ -1,3 +1,4 @@
+import re
 from typing import List
 from tips.framework.actions.sql_action import SqlAction
 from tips.framework.actions.sql_command import SQLCommand
@@ -25,7 +26,8 @@ class DQTestAction(SqlAction):
         if len(self._cmdDQTests) > 0:
             for cmdDQTest in self._cmdDQTests:
 
-                dqQuery = cmdDQTest["PROCESS_DQ_TEST_QUERY_TEMPLATE"].strip()
+                dqQuery = cmdDQTest["PROCESS_DQ_TEST_QUERY_TEMPLATE"].strip().upper()
+                dqQuery = re.sub(' +', ' ', dqQuery) ##remove any double spaces
 
                 if "{COL_NAME}" in dqQuery:
                     dqQuery = dqQuery.replace("{COL_NAME}", cmdDQTest["ATTRIBUTE_NAME"])
@@ -39,10 +41,44 @@ class DQTestAction(SqlAction):
                     )
 
                 if self._whereClause is not None and self._whereClause != "":
-                    if 'where' in dqQuery.lower():
-                        dqQuery = dqQuery + " AND " + self._whereClause
-                    else:
-                        dqQuery = dqQuery + " WHERE " + self._whereClause
+                    currentStr:str = None
+                    newStr:str = None
+                    fromIdx = dqQuery.rfind("FROM")
+                    whereIdx = dqQuery.rfind("WHERE")
+                    groupByIdx = dqQuery.rfind("GROUP BY")
+                    qualifyIdx = dqQuery.rfind("QUALIFY")
+                    orderByIdx = dqQuery.rfind("ORDER BY")
+                    limitIdx = dqQuery.rfind("LIMIT")
+
+                    if (whereIdx == -1) or (whereIdx < fromIdx): # WHERE clause is either not present at all, or in last query
+                        #Get string between FROM and GROUP BY, if GROUP BY is present
+                        if (groupByIdx != -1) and (groupByIdx > fromIdx): ##Group By clause is present
+                            currentStr = dqQuery[fromIdx:groupByIdx].strip()
+                        elif (qualifyIdx != -1) and (qualifyIdx > fromIdx): ##QUALIFY clause is present
+                            currentStr = dqQuery[fromIdx:qualifyIdx].strip()
+                        elif (orderByIdx != -1) and (orderByIdx > fromIdx): ##ORDER BY clause is present
+                            currentStr = dqQuery[fromIdx:orderByIdx].strip()
+                        elif (limitIdx != -1) and (limitIdx > fromIdx): ##LIMIT clause is present
+                            currentStr = dqQuery[fromIdx:limitIdx].strip()
+                        else: #No clauses are present after FROM, so we take whole string post FROM
+                            currentStr = dqQuery[fromIdx:].strip()
+
+                        newStr = f"{currentStr} WHERE {self._whereClause}" 
+                    else: # WHERE clause is present in last part of query
+                        if (groupByIdx != -1) and (groupByIdx > whereIdx): ##Group By clause is present
+                            currentStr = dqQuery[whereIdx:groupByIdx].strip()
+                        elif (qualifyIdx != -1) and (qualifyIdx > whereIdx): ##QUALIFY clause is present
+                            currentStr = dqQuery[whereIdx:qualifyIdx].strip()
+                        elif (orderByIdx != -1) and (orderByIdx > whereIdx): ##ORDER BY clause is present
+                            currentStr = dqQuery[whereIdx:orderByIdx].strip()
+                        elif (limitIdx != -1) and (limitIdx > whereIdx): ##LIMIT clause is present
+                            currentStr = dqQuery[whereIdx:limitIdx].strip()
+                        else: #No clauses are present after WHERE, so we take whole string post WHERE
+                            currentStr = dqQuery[whereIdx:].strip()
+                        newStr = f"{currentStr} AND {self._whereClause}" 
+
+                    if currentStr is not None and newStr is not None:
+                        dqQuery = dqQuery.replace(currentStr,newStr)
 
                 # cmd:str = f"SELECT COUNT(*) AS DQ_TEST_FAILED_COUNT FROM ({dqQuery})"
                 cmd: str = dqQuery
