@@ -6,7 +6,7 @@ TiPS (Transformation in Pure SQL) is a transformation framework developed by Pro
 When testing the changes through scripts in test folder (i.e. run_process_log.py and run_process_sp.py), you would need to set
 you would need to set PYTHONPATH enviroment variable, with path that of your github folder e.g.
 ```
-export PYTHONPATH=/c/GitHub/transformation-framework-snowpark
+export PYTHONPATH=/c/GitHub/tips-snowpark
 ```
 for relative paths in imports to work
 
@@ -45,7 +45,7 @@ snowsql -c tips_user
 And then following command can be run from within snowsql to upload the zip file to the named stage
 * Please make changes to below command as appropriate for your setup *
 ```
-put file:///GitHub/transformation-framework-snowpark/tips.zip @tips auto_compress=false overwrite=true;
+put file:///GitHub/tips-snowpark/tips.zip @tips auto_compress=false overwrite=true;
 ```
 After uploading the zip file to named stage, you need to compile 2 stored procedures (available inside stored_procedure_stub folder) in your database:
 1) create_temporary_table.sql

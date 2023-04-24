@@ -17,6 +17,7 @@ class ActionMetadata():
     _generateMergeMatchedClause: bool
     _generateMergeWhenNotMatchedClause: bool
     _isActive: bool
+    _cmdDQTests: list
 
     def __init__(self, cmdType: str, source: str, target: str,
                  whereClause: str, additionalFields: List[AdditionalField],
@@ -24,7 +25,8 @@ class ActionMetadata():
                  businessKey: str, refreshType: str, mergeOnFields: List[str],
                  generateMergeMatchedClause: bool,
                  generateMergeWhenNotMatchedClause: bool,
-                 isActive: bool) -> None:
+                 isActive: bool,
+                 cmdDQTests: List) -> None:
 
         self._cmdType = cmdType
         self._source = source
@@ -40,6 +42,7 @@ class ActionMetadata():
         self._generateMergeMatchedClause = generateMergeMatchedClause
         self._generateMergeWhenNotMatchedClause = generateMergeWhenNotMatchedClause
         self._isActive = isActive
+        self._cmdDQTests = cmdDQTests
 
     def getCmdType(self) -> str:
         return self._cmdType
@@ -82,3 +85,6 @@ class ActionMetadata():
 
     def isActive(self) -> bool:
         return self._isActive
+
+    def getCmdDQTests(self) -> List:
+        return self._cmdDQTests

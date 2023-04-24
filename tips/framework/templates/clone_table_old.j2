@@ -1,5 +1,0 @@
-CREATE OR REPLACE 
-{% if parameters.source == parameters.target %}
-TEMPORARY
-{% endif %}
-TABLE {{ parameters.target }} LIKE {{ parameters.source }}

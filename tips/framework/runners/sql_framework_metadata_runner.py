@@ -26,3 +26,26 @@ class SQLFrameworkMetaDataRunner(FrameworkMetaData):
 
         results: List[Dict] = session.sql(cmdStr).collect()
         return results
+
+    def getDQMetaData(self, session: Session) -> Dict:
+
+        logger.info('Fetching Framework DQ Metadata...')
+
+        cmdStr: str = SQLTemplate().getTemplate(
+            sqlAction="framework_dq_metadata",
+            parameters={"process_name": self._processName},
+        )
+
+        results: List[Dict] = session.sql(cmdStr).collect()
+
+        returnDict = {}
+        scannedKeys = []
+        for val in results:
+            if val['PROCESS_CMD_ID'] not in scannedKeys:
+                returnDict[val['PROCESS_CMD_ID']] = []
+
+            returnDict[val['PROCESS_CMD_ID']].append(val)
+            scannedKeys.append(val['PROCESS_CMD_ID'])
+            scannedKeys = list(set(scannedKeys))
+
+        return returnDict

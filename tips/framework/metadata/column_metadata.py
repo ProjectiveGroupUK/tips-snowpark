@@ -25,7 +25,6 @@ class ColumnMetadata:
 
             logger.info("Fetching Column Metadata...")
 
-
             schemas = set()
             data: List[Dict] = list()
             returnColumnMetaData: Dict[str, List[ColumnInfo]] = dict()
@@ -39,7 +38,7 @@ class ColumnMetadata:
 
             for val in frameworkMetaData:
                 # For all cmd_src
-                schemaName = val["CMD_SRC"].split(".", 1)[0]
+                schemaName = (val["CMD_SRC"] if val["CMD_SRC"] is not None else '').split(".", 1)[0]
                 ## Schema name start with alpha or underscore and only contains alphanumeric, underscore or dollar
                 if re.match("^[a-zA-Z_]+.", schemaName) and re.match(
                     "^[\w_$]+$", schemaName
@@ -47,7 +46,7 @@ class ColumnMetadata:
                     schemas.add(schemaName)
 
                 # For all cmd_tgt
-                schemaName = val["CMD_TGT"].split(".", 1)[0]
+                schemaName = (val["CMD_TGT"] if val["CMD_TGT"] is not None else '').split(".", 1)[0]
                 ## Schema name start with alpha or underscore and only contains alphanumeric, underscore or dollar
                 if re.match("^[a-zA-Z_]+.", schemaName) and re.match(
                     "^[\w_$]+$", schemaName
@@ -56,7 +55,7 @@ class ColumnMetadata:
 
             for schemaName in schemas:
                 cmdStr = f"SHOW COLUMNS IN SCHEMA {databaseName}.{schemaName}"
-                results: List[Dict] = session.sql(cmdStr).collect()
+                results = session.sql(cmdStr).collect()
 
                 for result in results:
                     data.append(result)
@@ -68,7 +67,7 @@ class ColumnMetadata:
                                 AND table_schema = '{schemaName}'
                                 AND constraint_type = 'PRIMARY KEY'"""
 
-                results: List[Dict] = session.sql(cmdStr).collect()
+                results = session.sql(cmdStr).collect()
 
                 if len(results) > 0:
                     for result in results:
@@ -80,7 +79,7 @@ class ColumnMetadata:
                                 WHERE sequence_catalog = '{databaseName}'
                                 AND sequence_schema = '{schemaName}'"""
 
-                results: List[Dict] = session.sql(cmdStr).collect()
+                results = session.sql(cmdStr).collect()
 
                 if len(results) > 0:
                     for result in results:
@@ -138,9 +137,9 @@ class ColumnMetadata:
                 returnColumnMetaData[key] = tbl
 
             logger.info("Fetched Column Metadata!")
-
+          
             return returnColumnMetaData
 
-        except Exception as ex:
-            err = f"Error: Fetching Column Metadata - {ex}"
-            raise Exception(err)
+        except:
+            logging.error(f"Error: Fetching Column Metadata")
+            raise
