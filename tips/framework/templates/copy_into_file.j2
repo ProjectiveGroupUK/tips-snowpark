@@ -1,10 +1,17 @@
 COPY INTO {{ parameters.fileName }} 
-FROM (SELECT * 
-        FROM {{ parameters.tableName }}
+FROM ({{ parameters.selectQuery }}
 {% if parameters.whereClause is defined and parameters.whereClause != None and parameters.whereClause != '' %}
        WHERE {{ parameters.whereClause }}
 {% endif %}
-      )
-FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
-SINGLE = TRUE
+)
+{% if parameters.partitionBy is defined and parameters.partitionBy != None and parameters.partitionBy != '' %}
+PARTITION BY ({{ parameters.partitionBy }})
+{% else %}
 OVERWRITE = TRUE
+{% endif %}
+{% if parameters.fileFormatName is defined and parameters.fileFormatName != None and parameters.fileFormatName != '' %}
+FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
+{% else %}
+FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
+{% endif %}
+HEADER = TRUE

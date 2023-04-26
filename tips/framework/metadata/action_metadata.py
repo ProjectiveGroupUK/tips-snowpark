@@ -10,7 +10,8 @@ class ActionMetadata():
     _additionalFields: list
     _binds: list
     _createTempTable: bool
-    _pivotBy: list
+    _pivotField: str
+    _pivotBy: str
     _businessKey: str
     _refreshType: str
     _mergeOnFields: list
@@ -18,15 +19,19 @@ class ActionMetadata():
     _generateMergeWhenNotMatchedClause: bool
     _isActive: bool
     _cmdDQTests: list
+    _fileFormatName: str
+    _copyIntoFilePartitionBy: str
 
     def __init__(self, cmdType: str, source: str, target: str,
                  whereClause: str, additionalFields: List[AdditionalField],
-                 binds: List[Dict], createTempTable: bool, pivotBy: List[str],
+                 binds: List[Dict], createTempTable: bool, pivotField: str, pivotBy: str,
                  businessKey: str, refreshType: str, mergeOnFields: List[str],
                  generateMergeMatchedClause: bool,
                  generateMergeWhenNotMatchedClause: bool,
                  isActive: bool,
-                 cmdDQTests: List) -> None:
+                 cmdDQTests: List,
+                 fileFormatName: str,
+                 copyIntoFilePartitionBy: str) -> None:
 
         self._cmdType = cmdType
         self._source = source
@@ -35,6 +40,7 @@ class ActionMetadata():
         self._additionalFields = additionalFields
         self._binds = binds
         self._createTempTable = createTempTable
+        self._pivotField = pivotField
         self._pivotBy = pivotBy
         self._businessKey = businessKey
         self._refreshType = refreshType
@@ -43,6 +49,8 @@ class ActionMetadata():
         self._generateMergeWhenNotMatchedClause = generateMergeWhenNotMatchedClause
         self._isActive = isActive
         self._cmdDQTests = cmdDQTests
+        self._fileFormatName = fileFormatName
+        self._copyIntoFilePartitionBy = copyIntoFilePartitionBy
 
     def getCmdType(self) -> str:
         return self._cmdType
@@ -65,7 +73,10 @@ class ActionMetadata():
     def isCreateTempTable(self) -> bool:
         return self._createTempTable
 
-    def getPivotBy(self) -> List[str]:
+    def getPivotField(self) -> str:
+        return self._pivotField
+ 
+    def getPivotBy(self) -> str:
         return self._pivotBy
 
     def getBusinessKey(self) -> str:
@@ -88,3 +99,9 @@ class ActionMetadata():
 
     def getCmdDQTests(self) -> List:
         return self._cmdDQTests
+
+    def getFileFormatName(self) -> str:
+        return self._fileFormatName
+
+    def getCopyIntoFilePartitionBy(self) -> str:
+        return self._copyIntoFilePartitionBy

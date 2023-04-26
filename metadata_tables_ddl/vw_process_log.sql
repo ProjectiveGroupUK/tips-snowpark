@@ -12,6 +12,11 @@ create or replace view VW_PROCESS_LOG(
 	TARGET,
 	SQL,
 	STEP_STATUS,
+	ROWS_INSERTED,
+	ROWS_UPDATED,
+	ROWS_DELETED,
+	ROWS_LOADED,
+	ROWS_UNLOADED,
 	EXECUTION_TIME_IN_SECS,
 	COMMAND_STATUS,
 	COMMAND_WARNING,
@@ -30,6 +35,11 @@ select pl.process_log_id
 , stps.value:parameters:target::varchar AS target
 , cmds.value:sql_cmd::varchar AS sql
 , cmds.value:status::varchar AS step_status
+, cmds.value:cmd_status:ROWS_INSERTED AS ROWS_INSERTED
+, cmds.value:cmd_status:ROWS_UPDATED AS ROWS_UPDATED
+, cmds.value:cmd_status:ROWS_DELETED AS ROWS_DELETED
+, cmds.value:cmd_status:ROWS_LOADED AS ROWS_LOADED
+, cmds.value:cmd_status:ROWS_UNLOADED AS ROWS_UNLOADED
 , cmds.value:cmd_status:EXECUTION_TIME_IN_SECS AS execution_time_in_secs
 , cmds.value:cmd_status:STATUS::varchar AS command_status
 , cmds.value:warning_message::varchar AS command_warning

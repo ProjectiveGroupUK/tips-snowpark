@@ -26,6 +26,8 @@ SELECT p.process_id,
        c.cmd_pivot_field,
        c.dq_type,
        c.cmd_external_call,
+       c.file_format_name,
+       c.copy_into_file_paritition_by,
        NVL(c.active,'N') AS active,
        NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars
   FROM tips_md_schema.process P
