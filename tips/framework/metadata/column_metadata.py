@@ -1,10 +1,10 @@
 import json
 import re
 from typing import List, Dict
-from snowflake.snowpark import Session
 from itertools import groupby
 
 from tips.framework.metadata.column_info import ColumnInfo
+from tips.framework.utils.globals import Globals
 
 # Below is to initialise logging
 import logging
@@ -14,9 +14,9 @@ logger = logging.getLogger(Logger.getRootLoggerName())
 
 
 class ColumnMetadata:
-    def getData(
-        self, frameworkMetaData: List[Dict], session: Session
-    ) -> List[Dict]:
+    def getData(self, frameworkMetaData: List[Dict]) -> List[Dict]:
+        globalsInstance = Globals()
+        session = globalsInstance.getSession()
 
         try:
 
@@ -34,11 +34,13 @@ class ColumnMetadata:
 
             cmdStr = f"SELECT CURRENT_DATABASE() AS DB"
             results: List[Dict] = session.sql(cmdStr).collect()
-            databaseName:str = results[0]['DB']
+            databaseName: str = results[0]["DB"]
 
             for val in frameworkMetaData:
                 # For all cmd_src
-                schemaName = (val["CMD_SRC"] if val["CMD_SRC"] is not None else '').split(".", 1)[0]
+                schemaName = (
+                    val["CMD_SRC"] if val["CMD_SRC"] is not None else ""
+                ).split(".", 1)[0]
                 ## Schema name start with alpha or underscore and only contains alphanumeric, underscore or dollar
                 if re.match("^[a-zA-Z_]+.", schemaName) and re.match(
                     "^[\w_$]+$", schemaName
@@ -46,7 +48,9 @@ class ColumnMetadata:
                     schemas.add(schemaName)
 
                 # For all cmd_tgt
-                schemaName = (val["CMD_TGT"] if val["CMD_TGT"] is not None else '').split(".", 1)[0]
+                schemaName = (
+                    val["CMD_TGT"] if val["CMD_TGT"] is not None else ""
+                ).split(".", 1)[0]
                 ## Schema name start with alpha or underscore and only contains alphanumeric, underscore or dollar
                 if re.match("^[a-zA-Z_]+.", schemaName) and re.match(
                     "^[\w_$]+$", schemaName
@@ -137,7 +141,7 @@ class ColumnMetadata:
                 returnColumnMetaData[key] = tbl
 
             logger.info("Fetched Column Metadata!")
-          
+
             return returnColumnMetaData
 
         except:

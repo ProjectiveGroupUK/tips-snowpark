@@ -1,10 +1,11 @@
 from typing import Dict, List
-from snowflake.snowpark import Session
+
 from tips.framework.actions.action import Action
 from tips.framework.actions.sql_action import SqlAction
 from tips.framework.actions.sql_command import SQLCommand
 from tips.framework.runners.runner import Runner
 from datetime import datetime
+from tips.framework.utils.globals import Globals
 
 # Below is to initialise logging
 import logging
@@ -15,7 +16,7 @@ logger = logging.getLogger(Logger.getRootLoggerName())
 
 class SQLRunner(Runner):
     def execute(
-        self, action: Action, session: Session, frameworkRunner
+        self, action: Action, frameworkRunner
     ) -> int:
         commandList: List[object] = action.getCommands()
         executeReturn: int = 0
@@ -28,7 +29,7 @@ class SQLRunner(Runner):
                 if isinstance(command, SQLCommand):
                     ##For DQ Test we are going to run all the test and capture if there is any one
                     ##with error and abort
-                    ret, dqTestAbort = self.executeSQL(command, session, frameworkRunner)
+                    ret, dqTestAbort = self.executeSQL(command, frameworkRunner)
                     if ret == 1:
                         executeReturn = 1
                         break
@@ -36,7 +37,7 @@ class SQLRunner(Runner):
                         dqTestAbortSignal = True
 
                 elif isinstance(command, SqlAction):
-                    ret = self.execute(command, session, frameworkRunner)
+                    ret = self.execute(command, frameworkRunner)
                     if ret == 1:
                         executeReturn = 1
                         break
@@ -49,8 +50,11 @@ class SQLRunner(Runner):
                 return executeReturn
 
     def executeSQL(
-        self, sql: SQLCommand, session: Session, frameworkRunner
+        self, sql: SQLCommand, frameworkRunner
     ) -> int:
+        globalsInstance = Globals()
+        session = globalsInstance.getSession()
+        
         dqTestAbort: bool = False
         sqlCommand: str = sql.getSqlCommand()
         logger.info(sqlCommand)

@@ -2,6 +2,7 @@ from typing import Dict
 from tips.framework.actions.action import Action
 from tips.framework.actions.append_action import AppendAction
 from tips.framework.actions.copy_into_file_action import CopyIntoFileAction
+from tips.framework.actions.copy_into_table_action import CopyIntoTableAction
 from tips.framework.actions.default_action import DefaultAction
 from tips.framework.actions.delete_action import DeleteAction
 from tips.framework.actions.di_refresh_action import DIRefreshAction
@@ -69,6 +70,18 @@ class ActionFactory:
                 actionMetaData.getTarget(),
                 actionMetaData.getWhereClause(),
                 actionMetaData.getBinds(),
+                actionMetaData.getPivotBy(),
+                actionMetaData.getPivotField(),
+                actionMetaData.getFileFormatName(),
+                actionMetaData.getCopyIntoFilePartitionBy(),
+            )
+        elif actionMetaData.getCmdType() == "COPY_INTO_TABLE":
+            logger.info("Running Copy Into Table Action...")
+            action = CopyIntoTableAction(
+                source=actionMetaData.getSource(),
+                target=actionMetaData.getTarget(),
+                binds=actionMetaData.getBinds(),
+                fileFormatName=actionMetaData.getFileFormatName()
             )
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")

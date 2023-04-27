@@ -7,6 +7,7 @@ from tips.framework.metadata.column_metadata import ColumnMetadata
 from tips.framework.metadata.table_metadata import TableMetaData
 from tips.framework.metadata.framework_metadata import FrameworkMetaData
 from tips.framework.runners.framework_runner import FrameworkRunner
+from tips.framework.utils.globals import Globals
 
 # from tips.framework.utils.logger import Logger
 from datetime import datetime
@@ -45,6 +46,8 @@ class App:
         )
         self._executeFlag = executeFlag
         self._addLogFileHandler = addLogFileHandler
+        globalsInstance = Globals()
+        globalsInstance.setSession(session=self._session)
 
     def main(self) -> None:
         logger.debug("Inside framework app main")
@@ -59,7 +62,7 @@ class App:
             framework: FrameworkMetaData = FrameworkFactory().getProcess(
                 self._processName
             )
-            frameworkMetaData: List[Dict] = framework.getMetaData(session=self._session)
+            frameworkMetaData: List[Dict] = framework.getMetaData()
 
             if len(frameworkMetaData) <= 0:
                 err = "Could not fetch Metadata. Please make sure correct process name is passed and metadata setup has been done correctly first!"
@@ -70,12 +73,10 @@ class App:
                 logger.info("Fetched Framework Metadata!")
                 processStartTime = start_dt
 
-                frameworkDQMetaData: List[Dict] = framework.getDQMetaData(
-                    session=self._session
-                )
+                frameworkDQMetaData: List[Dict] = framework.getDQMetaData()
 
                 columnMetaData: List[Dict] = ColumnMetadata().getData(
-                    frameworkMetaData=frameworkMetaData, session=self._session
+                    frameworkMetaData=frameworkMetaData
                 )
 
                 tableMetaData: TableMetaData = TableMetaData(columnMetaData)
@@ -87,12 +88,11 @@ class App:
                 )
 
                 runFramework, dqTestLogs = frameworkRunner.run(
-                    session=self._session,
                     tableMetaData=tableMetaData,
                     frameworkMetaData=frameworkMetaData,
                     frameworkDQMetaData=frameworkDQMetaData,
                 )
-                
+
                 if self._addLogFileHandler:
                     Logger().writeResultJson(runFramework)
 
