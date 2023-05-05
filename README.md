@@ -12,7 +12,7 @@ for relative paths in imports to work
 
 And then from the test folder you can run a command, e.g.
 ```
-python run_process_local.py -p SAMPLE_CUSTOMER -v "{'BIND_VAR_KEY1':'BIND_VAR_KEY1', 'BIND_VAR_KEY2':'BIND_VAR_KEY2'}" -e N
+python run_process_local.py -p TIPS_TEST_PIPELINE -v "{'COBID':'20230101', 'MARKET_SEGMENT':'FURNITURE'}" -e N
 ```
 
 In the above command, SAMPLE_CUSTOMER is the data pipeline name, as defined in process table. Additionally command binds variables can be passed with -v argument, if used in the process. Last argument -e can accept Y/N, indicating whether generated sqls are to be executed or just outputted.

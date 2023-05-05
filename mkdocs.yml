@@ -1,0 +1,10 @@
+site_name: TiPS (Snowpark) Documentation
+
+theme:
+  name: "material"
+
+nav:
+  - Introduction: index.md
+  - Getting Started: getting-started.md
+  - How-To (Data Pipelines): how-to-data-pipelines.md
+  - How-To (Data Quality Tests): how-to-data-quality-tests.md
