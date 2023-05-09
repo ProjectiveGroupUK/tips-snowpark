@@ -1,12 +1,12 @@
 # Getting Started
-Great, now that you have made your mind to give TiPS a try, let's get you started. Surely, you would find it worth giving it a try. Any feedbacks and suggestions for improvements are always welcome. Kindly add your feedbacks/suggestions using GitHub Discussions 
+Great, now that you have made your mind to give TiPS a try, let's get you started. We are pretty confident that you will find it worth to give it a try. Any feedbacks and suggestions for improvements are always welcome. Kindly add your feedbacks/suggestions using GitHub Discussions 
 
-![discussions](images/github_discussions.png).
+![GitHub Discussions](images/github_discussions.png)
+
+Please make sure you have Python installed on your PC, as you would need it, if you want to run TiPS using Snowpark Client API, or test the code before uploading it to snowflake. If Python is not installed on your PC, it can be downloaded and installed from [Python's official website](https://www.python.org/). Recommended python version is 3.8 and over.
 
 ## TiPS Setup
-Presumably you are currently browsing through the reposotiry on GitHub or you are on next step already by downloading the repository to your PC. If you haven't yet downloaded the repository, let's get that done first.
-
-Please make sure you have Python installed on your PC, as you would need it, if you want to run TiPS using Snowpark Client API, or test the code base before uploading it to snowflake. If Python is not installed on your PC, it can be downloaded and installed from [Python's official website](https://www.python.org/). Recommended python version is 3.8 and over. 
+Presumably you are currently browsing through the reposotiry on GitHub or perhaps you have already downloaded the repository to your PC. If you haven't yet downloaded the repository, let's get it downloaded first.
 
 ### Downloading Repository
 TiPS can be downloaded from [GitHub repository](https://github.com/ProjectiveGroupUK/tips-snowpark), either by cloning the repository or downloading as zip file. When on the repository page, Click on the "<> Code", as shown in yellow highlighting, in screenshot below:
@@ -28,7 +28,7 @@ if you prefer, open command prompt/powershell (Windows) or terminal window (Linu
 * Linux/Mac - `cd /GitHub/tips-snowpark`
 * Bash Terminal - `cd /c/GitHub/tips-snowpark/`
 
-*It is preferable to use Bash Terminal on Windows PC, as further instructions are given using bash terminal. On Windows PC with Git installed, Git Bash should be present*
+*It is preferable to use Bash Terminal on Windows PC, as command examples in the instructions given below are from bash terminal. On Windows PC with Git installed, Git Bash should be present*
 
 <p>Once in the terminal, run the following command to setup python virtual evironment:</p>
 
@@ -54,6 +54,7 @@ There is a folder named `metadata_tables_ddl`, which contains SQL scripts for da
 6. `process_cmd_tgt_dq_test.sql`: This is DDL script for `PROCESS_CMD_TGT_DQ_TEST` table
 7. `process_dq_log.sql`: thsi is DDL script for `PROCESS_DQ_LOG` table
 8. `vw_process_log.sql` [optional]: This is script for a view to be built on PROCESS_LOG table. It flattens out the JSON Log into tabular rows for easier interpretation from within the database
+9. `tips_internal_stage.sql`: This script creates an internal named stage, which would need to upload our code base, which is referenced by stored procedure.
 
 Also, inside `stored_procedure_stub` folder, there are couple of scripts available. These are for stored procedures used by TiPS. Please compile `create_temporary_table.sql` script. This stored procured is needed even when we run TiPS from command line (using Snowpark Client API) 
 
@@ -83,7 +84,19 @@ Finally, for setup of data pipeline, run the script abavilable in "test -> sampl
 Now that you have setup a trial data pipeline using table/views and metadata, it is now a good time to test whether TiPS is working as expected.
 
 To do that please follow the steps below:
-1. For executing TiPS from command line using Snowpark Client API, we will run it with `run_process_log.py` which is availabe inside test folder. However before we run that, we would need to set an environment variable on the terminal, for relative paths in imports to work properly. Please use the command below as an example and tweak as necessary according to your folder structure setup and/or OS requirement (below is the example for being run on a Bash terminal)
+1. First of all we need to setup a file with your database credentials that TiPS would use to connect to your snowflake instance. To do that, inside `test` folder, create a file named `.env` (There is no filename, just the extension. This file is already configured to be ignored from getting pushed to Git repository). Once you have the file in `test` folder, open it in any of your favourite text editor and add your database credentials as below (change the values appropriate to your account between `<<>>`):
+
+```
+SF_ACCOUNT=<<Snowflake Account ID>>
+SF_USER=<<Snowflake User ID>>
+SF_PASSWORD=<<Your Snowflake Password>>
+SF_ROLE=<<Snowflake Role to use>> 
+SF_WAREHOUSE=<<Snowflake Warehouse to use>>
+SF_DATABASE=<<Snowflake Database to connect to>>
+SF_SCHEMA=<<Snowflake schema where TiPS metadata information has been setup>>
+```
+
+2. For executing TiPS from command line using Snowpark Client API, we will run it with `run_process_log.py` which is availabe inside test folder. However before we run that, we would need to set an environment variable on the terminal, for relative paths in imports to work properly. Please use the command below as an example and tweak as necessary according to your folder structure setup and/or OS requirement (below is the example for being run on a Bash terminal)
 you would need to set PYTHONPATH enviroment variable, with path that of your github folder e.g.
 ```
 export PYTHONPATH=/c/GitHub/tips-snowpark
@@ -107,3 +120,26 @@ With parameters:
 Once the above command is executed and if everything has been setup correcty, you should start seeing the log messages on terminal window displaying how execution of pipeline is prgressing. You should also notice a `log` folder created inside `test` folder, where log files are generated
 
 ### Execute Data Pipeline (inside Snowflake with Stored Procedure)
+So, if you have reached this step, presumably everything with setting things up, has worked as expected. This step is needed, if you want to run the data pipelines from inside the database, executing via stored procedure. The advantage of running it with Stored procedure are:
+
+1. Stored procedure runs with owner priveleges. So the user executing it, doesn't need read/write priveleges on underlying database objects. Only execution privelege is required on the stored procedure
+2. Everything runs inside the database, so data doesn't leave the data platform.
+3. Once the setup is done, other users/tools can execute data pipelines without needing Python or other setup that we have to do in steps above 
+
+Before we compile the stored procedure, we would need to upload TiPS core code to snowflake internal stage, that we created in step [above](#setup-database-objects).
+
+#### Zip TiPS code and uploade to stage
+There is a "tips" folder insire the repository. Bundle this folder with its content to a zip file (preferably named as `tips.zip`). If you are on windows, you can easily do that from file explorer, by navigating to repository folder and then right click on **tips** folder and select "compress to zip file" option (or "send to compressed file" on previous versions of windows). This should produce `tips.zip` file inside your repository folder.
+
+#### Compile RUN_PROCESS_SP stored procedure
+To setup stored procedure, please execute the script `run_process_sp.sql` available inside stored_procedure_stub folder.
+
+#### Execute RUN_PROCESS_SP stored procedure
+Now that your stored procedure is compiled in the database, you can execute TiPS from within Snowflake like any other stored procedure. For example to run the sample pipeline, if you have set it up, run the following command from snowflake IDE:
+
+```
+call run_process_sp(process_name=>'TIPS_TEST_PIPELINE', vars=>'{"COBID":"20230101", "MARKET_SEGMENT":"FURNITURE"}', execute_flag=>'Y')
+```
+
+Above command example is passing parameter values in named parameter way, but you can just pass in values in positional way, without explictly specifying parameter name. Also `var` parameter value is needed in JSON format where bind variables are used in the pipeline. If bind variables are not used, just pass in `NULL` instead.
+
