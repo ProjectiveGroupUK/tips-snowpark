@@ -58,16 +58,50 @@ class SCD2PublishAction(SqlAction):
                     source=self._target,
                     target=self._target,
                     tableMetaData=self._metadata,
+                    isTempTable=True
                 )
             )
 
-        ## check that the COB hasn''t already been loaded into the dimension
+        ## Now clone the target table to an interim table
+        interimTableName = f"{self._target.split('.')[0].strip()}.SRC_{self._target.split('.')[1].strip()}"
+        cmd.append(
+            CloneTableAction(
+                source=self._target,
+                target=interimTableName,
+                tableMetaData=self._metadata,
+                isTempTable=True
+            )
+        )
+
+        # Populate intermin table
+        ##Add IS_CURRENT_ROW and EFFECTIVE_END_DATE as additional fields, if these are not already part of view
+        commonColumns = [col.getColumnName().upper() for col in self._metadata.getCommonColumns(self._source, self._target)]
+        if "IS_CURRENT_ROW" not in commonColumns:
+            self._additionalFields.append(AdditionalField(expression="TRUE",alias="IS_CURRENT_ROW"))
+
+        if "EFFECTIVE_END_DATE" not in commonColumns:
+            self._additionalFields.append(AdditionalField(expression="TO_DATE('99991231','YYYYMMDD')",alias="EFFECTIVE_END_DATE"))
+
+        cmd.append(
+            AppendAction(
+                source=self._source,
+                target=interimTableName,
+                whereClause=self._whereClause,
+                metadata=self._metadata,
+                binds=self._binds,
+                additionalFields=self._additionalFields,
+                isOverwrite=False,
+                isCreateTempTable=False,
+            )
+        )
+
+        ## check that the COB hasn't already been loaded into the dimension
         selectFieldClause = "count(*) AS cnt"
-        whereClause = "effective_start_date > to_date(':1','yyyymmdd')"
+        whereClause = f"effective_start_date > (SELECT MAX(effective_start_date) FROM {interimTableName})"
         sqlChecks: List = list()
         sqlCheck: Dict = dict()
         sqlCheck["condition"] = "['CNT'] != 0"
-        sqlCheck["error"] = "Cannot Run this Procedure for an Old Business Date"
+        sqlCheck["error"] = f"EFFECTIVE_START_DATE in {self._source} cannot be prior to existing records in {self._target}"
         sqlChecks.append(sqlCheck)
 
         cmdStr = SQLTemplate().getTemplate(
@@ -82,31 +116,7 @@ class SCD2PublishAction(SqlAction):
             SQLCommand(sqlCommand=cmdStr, sqlBinds=self._binds, sqlChecks=sqlChecks)
         )
 
-        ## Now clone the target table to an interim table
-        interimTableName = f"{self._target.split('.')[0].strip()}.SRC_{self._target.split('.')[1].strip()}"
-        cmd.append(
-            CloneTableAction(
-                source=self._target,
-                target=interimTableName,
-                tableMetaData=self._metadata,
-            )
-        )
-
-        # Populate intermin table
-        cmd.append(
-            AppendAction(
-                source=self._source,
-                target=interimTableName,
-                whereClause=self._whereClause,
-                metadata=self._metadata,
-                binds=self._binds,
-                additionalFields=self._additionalFields,
-                isOverwrite=False,
-                isCreateTempTable=False,
-            )
-        )
-
-        ## check that the COB hasn''t already been loaded into the dimension
+        ## check that all record in source are of same effective date
         selectFieldClause = (
             "count(distinct effective_start_date ) count_effective_start_date"
         )
@@ -115,7 +125,7 @@ class SCD2PublishAction(SqlAction):
         sqlCheck["condition"] = "['COUNT_EFFECTIVE_START_DATE'] > 1"
         sqlCheck[
             "error"
-        ] = "The source table/view should should be filtered for one business date, or only contain one Business Date"
+        ] = f"{self._source} should only contain records with one EFFECTIVE_START_DATE"
         sqlChecks.append(sqlCheck)
 
         cmdStr = SQLTemplate().getTemplate(
@@ -216,6 +226,6 @@ class SCD2PublishAction(SqlAction):
         cmd.append(SQLCommand(sqlCommand=cmdStr))
 
         ## Now truncate interim table
-        cmd.append(TruncateAction(interimTableName))
+        # cmd.append(TruncateAction(interimTableName))
 
         return cmd

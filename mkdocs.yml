@@ -1,0 +1,32 @@
+site_name: TiPS (Snowpark) Documentation
+
+theme:
+  name: "material"
+  features:
+    - content.code.copy
+    - navigation.instant
+    - navigation.top
+  icon:
+    repo: fontawesome/brands/github
+
+repo_url: https://github.com/ProjectiveGroupUK/tips-snowpark
+repo_name: ProjectiveGroupUK/tips-snowpark
+
+markdown_extensions:
+  - tables
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg  
+
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.js
+
+nav:
+  - Introduction: index.md
+  - Getting Started: getting-started.md
+  - TiPS Conventions: tips_conventions.md
+  - Reference Guide: reference.md
+
+copyright: Copyright &copy; 2023 ProjectiveGroup UK

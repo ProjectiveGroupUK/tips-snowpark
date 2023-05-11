@@ -1,55 +1,33 @@
-# tips-snowpark
-TiPS (Transformation in Pure SQL) is a transformation framework developed by ProjectiveGroup for Snowflake's snowpark for python environment
+# Introduction to TiPS (Snowpark)
 
-## NOTES:
-----------------------------
-When testing the changes through scripts in test folder (i.e. run_process_log.py and run_process_sp.py), you would need to set
-you would need to set PYTHONPATH enviroment variable, with path that of your github folder e.g.
-```
-export PYTHONPATH=/c/GitHub/tips-snowpark
-```
-for relative paths in imports to work
+### What is TiPS?
+TiPS is a simple data transformation and data quality framework built for Snowflake.
 
-And then from the test folder you can run a command, e.g.
-```
-python run_process_local.py -p SAMPLE_CUSTOMER -v "{'BIND_VAR_KEY1':'BIND_VAR_KEY1', 'BIND_VAR_KEY2':'BIND_VAR_KEY2'}" -e N
-```
+The ideology behind TiPS was to create a framework that an experienced database professional, already adept with SQL, could easily deliver data pipelines with virtually zero learning curve.
 
-In the above command, SAMPLE_CUSTOMER is the data pipeline name, as defined in process table. Additionally command binds variables can be passed with -v argument, if used in the process. Last argument -e can accept Y/N, indicating whether generated sqls are to be executed or just outputted.
+A unit of work in TiPS can be one of two things:
 
-----------------------------
-Once you are happy with the changes and are ready to upload the code to snowflake stage, you would need to 
-zip the content of tips folder and upload the zip file.
+* A movement of data from a source to a target. In the majority of cases the sources are database views encapsulating transformation logic in the desired form, while the targets are database tables.
+* A data quality check to make sure data being moved from source to target conforms to the desired form, before getting consumed by the data consumer and thus providing inconsistent results.
 
-Zip files can be uploaded using snowsql, which can be downloaded and installed from snowflake's website https://developers.snowflake.com/snowsql/
+A data pipeline in TiPS is made up multiple steps or units, each performing it's own operation to move data from source to target or checking data quality (as shown below):
 
-When snowsql is installed, it creates a .snowsql folder under user's home folder, which contains a config file. It would be preferable 
-to set user credentials into config file, so that user credentials are not required everytime with snowsql. Below is an example block of 
-user credentials that can be added to config file
-```
-[connections.tips_user]
-accountname = dtsquaredpartner [Change to the appropriate account name]
-region = eu-west-1 [Change to the appropriate region name]
-username = tips_user [Change to the appropriate user name]
-password = *********** [Change astericks to textual password]
-dbname = elt_framework [Change to the appropriate database]
-schemaname = tips_md_schema [Change to the appropriate schema]
-warehousename = demo_wh [Change to the appropriate warehouse name]
-rolename = sysadmin [Change to the appropriate role name]
-```
+![Process Cmd](docs/images/process_cmd.png)
 
-Once the credentials have been set, you can connect to snowsql with the following command:
-```
-snowsql -c tips_user
-```
-And then following command can be run from within snowsql to upload the zip file to the named stage
-* Please make changes to below command as appropriate for your setup *
-```
-put file:///GitHub/tips-snowpark/tips.zip @tips auto_compress=false overwrite=true;
-```
-After uploading the zip file to named stage, you need to compile 2 stored procedures (available inside stored_procedure_stub folder) in your database:
-1) create_temporary_table.sql
-2) run_process_sp.sql
+TiPS is also built with Data Security aspect in mind, which distinguishes it from majority of the Data Transformation tools available in the market. With TiPS, the database credentials that are used to execute the data pipeline do not require read/write priveleges to underlying database objects, hence adding an extra layer of security over the data.
 
-Once these 2 scripts are compiled in your environment, you are good to execute run_process_sp stored procedure, passing in appropriate parameters, to run data pipelines.
+### How does TiPS work?
 
+TiPS is a simple to use Metadata driven transformation framework. All the metadata is stored in database tables in snowflake, which can easily be interogated using normal SQL commands.
+
+All TiPS objects are first class database objects
+
+When run in snowpark through stored procedure, TiPS provides an extra security feature where the executing user of the stored procedure doesn't need to have direct read/write priveleges on the underlying table/data. User calling the stored procedure only needs privileges to execute the stored procedure.
+
+## Getting Started
+Refer to the online [documentation](https://projectivegroupuk.github.io/tips-snowpark/getting-started/) for getting started.
+
+## Reference Guide
+Refer to the online [documentation](https://projectivegroupuk.github.io/tips-snowpark/getting-started/) for reference guide.
+
+**Complete documentation is available [here](https://projectivegroupuk.github.io/tips-snowpark/)**

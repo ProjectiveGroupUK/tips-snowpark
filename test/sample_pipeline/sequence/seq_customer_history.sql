@@ -1,0 +1,1 @@
+create or replace sequence tips_test_dimension.seq_customer_history start with 1 increment by 1;
