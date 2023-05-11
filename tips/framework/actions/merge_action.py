@@ -55,7 +55,7 @@ class MergeAction(SqlAction):
         ## if temp table flag is set on metadata, than create a temp table with same name as target
         ## in same schema
         if self._isCreateTempTable:
-            cmd.append(CloneTableAction(source=self._target, target=self._target, tableMetaData=self._metadata))
+            cmd.append(CloneTableAction(source=self._target, target=self._target, tableMetaData=self._metadata, isTempTable=True))
 
         commonColumns: List[ColumnInfo] = self._metadata.getCommonColumns(
             self._source, self._target
@@ -96,7 +96,7 @@ class MergeAction(SqlAction):
             if field.getColumnName() in fieldClause:
                 insertList.append(field.getColumnName())
                 valueList.append(f"s.{field.getColumnName()}")
-            elif field.getColumnName().endswith('_KEY') or field.getColumnName().endswith('_ID')  or field.getColumnName().endswith('_SEQ'):
+            elif field.getColumnName().endswith('_KEY') or field.getColumnName().endswith('_SEQ'):
                 if field.getSequenceName() is not None and field.getSequenceName() != "":
                     insertList.append(field.getColumnName())
                     valueList.append(f"{field.getSequenceName()}.nextval")

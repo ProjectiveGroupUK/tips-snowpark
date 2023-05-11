@@ -23,7 +23,7 @@ This is the table where you populate information about each steps in a data pipe
 | CMD_WHERE | This is where you can specify a filter clause that gets added to source as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
 | CMD_BINDS | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
 | REFRESH_TYPE | This is only applicable for REFRESH command type. Acceptable values are **DI/TI/OI** <p>**DI (Delete Insert)** - Before inserting the data in target, a delete command is run (where optionally filter clause can be added through CMD_WHERE)</p><p>**TI (Truncate Insert)** - Before inserting the data in target, truncate command on target is run</p><p>**OI (Overwrite Insert)** - Before inserting the data in target, any existing data is removed from target. This works similar to truncate, with the caveat that TRUNCATE is a DDL command invoking a commit to the transaction where OVERWRITE doesn't commits the transaction immediately after delete, thus tables is rolled back to previous state if INSERT DML throws an error</p> |
-| BUSINESS_KEY | This is only applicable for PUBLISH_SCD2_DIM command type. It is column(s delimitted by Pipe **"\|"** symbol) that defines a business key (also referred as natural key) for a dimension table. <p>For a slowly changing dimension, this is combination of key columns that uniquely identifies a row in the dimension (not a surrogate key), excluding record effective dates and/or current record flag</p> |
+| BUSINESS_KEY | This is only applicable for PUBLISH_SCD2_DIM command type. It is column(s) delimitted by Pipe **"\|"** symbol that defines a business key (also referred as natural key) for a dimension table. <p>For a slowly changing dimension, this is combination of key columns that uniquely identifies a row in the dimension (not a surrogate key), excluding record effective dates and/or current record flag</p> |
 | MERGE_ON_FIELDS | This is only applicable for MERGE command type. Here you specify columns that are to be used in generated MERGE SQL in the **ON** join clause. Multiple fields delimitted by Pipe **"\|"** symbol |
 | GENERATE_MERGE_MATCHED_CLAUSE | This is only applicable for MERGE command type. Here you specify whether ON MATCHED CLAUSE is to be generated in generated MERGE DML. Acceptaed values are Y/N. When Y is selected, ON MATCHED CLAUSE is generated which runs an UPDATE operation |
 | GENERATE_MERGE_NON_MATCHED_CLAUSE | This is only applicable for MERGE command type. Here you specify whether ON NOT MATCHED CLAUSE is to be generated in generated MERGE DML. Acceptaed values are Y/N. When Y is selected, ON NOT MATCHED CLAUSE is generated which runs an INSERT operation|
@@ -79,9 +79,90 @@ Following are the fields applicable for COPY_INTO_FILE command type:
 | COPY_INTO_FILE_PARITITION_BY | No | This field is to be populated when you want to apply a PARTITION BY clause in generated COPY INTO FILE command. COPY_INTO_FILE_PARITITION_BY field needs to be an SQL expression that outputs a string. The dataset specified by CMD_SRC will then be split into individual files based on the output of the expression. A directory will be created in the stage specified by CMD_TGT which will be named the same as the partition clause.  The data will then be output into this location in the stage. |
 
 ### COPY_INTO_TABLE
+This command type is for loading data from a staged file to the database table. Stage file can be stored in an internal user stage or an internal named stage or an external stage
+
+Following are the fields applicable for COPY_INTO_TABLE command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | This is the file location with data to be loaded. CMD_SRC should be the exact path and filename that should be loaded. <p>It is permissible to use any BIND variables as part of the name i,e, @~/:1/XYZ/ABC.csv would create a directory based on the first bind variable followed by XYZ.</p><p>E.g.</p><p>@tips/EXTRACTS/:1/PUBLISH_CUSTOMER/CUSTOMER.csv</p><p>When using File Format, extension can be ommitted</p> |
+| CMD_TGT | Yes | This is the name of table into which data from file is to be loaded<p>**Please include schema name along with table name, and all in CAPS**</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+| FILE_FORMAT_NAME | No | If a file format has been defined in the database with all applicable configurations, that this field can be used. <br>**Please include schema name with file format name e.g. [SCHEMA NAME].[FILE FORMAT NAME] and all in CAPS please**</br><p>If this field is omitted, then File Type "CSV" and compression "GZIP" is used by default |
+
 ### DELETE
+This effectively generates a "DELETE FROM [target table] additionally WHERE", if applicable
+
+Following are the fields applicable for DELETE command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_TGT | Yes | Specify the name of table from which data is to be deleted. <p>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_WHERE | No | This is where you can specify a filter clause that gets added as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+
 ### DQ_TEST
+This command type is for specifying Data Quallity Tests within data pipeline. All active Data Quality Tests defined on the target that is specified here, are run within this step.
+
+Following are the fields applicable for DQ_TEST command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_TGT | Yes | Specify the name of table/view on which data quality tests are to be run from which data is to be deleted.<br><p>*This can also accept pipe delimited multiple targets, which gives a flexibility to define running of DQ Tests on multiple targets in a single step.*</p><p>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_WHERE | No | This is where you can specify a filter clause that gets added as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+
 ### MERGE
+This command type is where we want to use a MERGE statement. It supports either WHEN MATCHED or WHEN NOT MATCHED or both.
+
+Following are the fields applicable for MERGE command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | Specify the name of source of data here. <p>This is usually a data table or a view that encapculates the transformation business logic. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_TGT | Yes | Specify the name of target destination of data here. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_WHERE | No | This is where you can specify a filter clause that gets added to source as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+| GENERATE_MERGE_MATCHED_CLAUSE | No | Acceptable values are Y/N. When set to Y, "WHEN MATCHED UPDATE" clause is added to generated MERGE statement<br><p>***Either this field or GENERATE_MERGE_NON_MATCHED_CLAUSE should be set to Y*** |
+| GENERATE_MERGE_NON_MATCHED_CLAUSE | No | Acceptable values are Y/N. When set to Y, "WHEN NOT MATCHED INSERT" clause is added to generated MERGE statement<br><p>***Either this field or GENERATE_MERGE_MATCHED_CLAUSE should be set to Y*** |
+| ADDITIONAL_FIELDS | No | This is where you specify any additional columns/fields to be added to generated SELECT clause from source, which is not available in source. <p>E.g.</p><p>TO_NUMBER(:1) COBID</p><p>would add a column to generated SELECT statement, where it is transforming bind variable value passed in at run time, and aliased as COBID, which would then become part of INSERT/MERGE statement</p> |
+| TEMP_TABLE | No | Acceptable values - Y/N/NULL <p>When set to Y, this would trigger creating a temporary table with the same name as target in the same schema as target, before the operation of the step is run.</p><p>This feature utilises special functionality that has been introduced in snowflake, that you can have permanent(or transient) table and a temporary table with the same name and temporary table is then given priority in the current running session.</p><p>In TiPS we utilise this functionality where a data pipeline can be run concurrently withing multiple sessions with its own bind variables and dataset are consistently transformed and published at session level</p> |
+
 ### PUBLISH_SCD2_DIM
+This command type is specifically created for populating data to SCD (Slowly Changing Dimension) Type 2, where updates to attributes of dimension are handled by creating a version of record with latest values and closing off previous version. This is done by setting appropriate values to "EFFECTIVE_START_DATE", "EFFECTIVE_END_DATE" and "IS_CURRENT_ROW" columns.
+
+Following are the fields applicable for PUBLISH_SCD2_DIM command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | Specify the name of source of data here. <p>This is usually a data table or a view that encapculates the transformation business logic. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_TGT | Yes | Specify the name of target destination of data here. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| BUSINESS_KEY | Yes | It is column(s) delimitted by Pipe **"\|"** symbol that define a business key (also referred as natural key) for a dimension table. <p>For a slowly changing dimension, this is combination of key columns that uniquely identifies a row in the dimension (not a surrogate key), excluding record effective dates and/or current record flag |
+| CMD_WHERE | No | This is where you can specify a filter clause that gets added to source as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+| ADDITIONAL_FIELDS | No | This is where you specify any additional columns/fields to be added to generated SELECT clause from source, which is not available in source. <p>E.g.</p><p>TO_NUMBER(:1) COBID</p><p>would add a column to generated SELECT statement, where it is transforming bind variable value passed in at run time, and aliased as COBID, which would then become part of INSERT/MERGE statement</p> |
+| TEMP_TABLE | No | Acceptable values - Y/N/NULL <p>When set to Y, this would trigger creating a temporary table with the same name as target in the same schema as target, before the operation of the step is run.</p><p>This feature utilises special functionality that has been introduced in snowflake, that you can have permanent(or transient) table and a temporary table with the same name and temporary table is then given priority in the current running session.</p><p>In TiPS we utilise this functionality where a data pipeline can be run concurrently withing multiple sessions with its own bind variables and dataset are consistently transformed and published at session level</p> |
+
 ### REFRESH
+This command type is for running a DELETE/TRUNCATE sql command on target and then consicutevly running INSERT sql command. REFRESH comman type supports "DELETE then INSERT", "OVERWRITE INSERT" or "TRUNCATE then INSERT", one of which should be specified with "REFRESH_TYPE" field setting.
+
+Following are the fields applicable for REFRESH command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | Specify the name of source of data here. <p>This is usually a data table or a view that encapculates the transformation business logic. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| CMD_TGT | Yes | Specify the name of target destination of data here. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+| REFRESH_TYPE | Yes | Acceptable values are **DI/TI/OI** <p>**DI (Delete Insert)** - Before inserting the data in target, a delete command is run (where optionally filter clause can be added through CMD_WHERE)</p><p>**TI (Truncate Insert)** - Before inserting the data in target, truncate command on target is run</p><p>**OI (Overwrite Insert)** - Before inserting the data in target, any existing data is removed from target. This works similar to truncate, with the caveat that TRUNCATE is a DDL command invoking a commit to the transaction where OVERWRITE doesn't commits the transaction immediately after delete, thus tables is rolled back to previous state if INSERT DML throws an error |
+| CMD_WHERE | No | This is where you can specify a filter clause that gets added to source as a WHERE clause at run time. <p>**WHERE** keyword should not be included and numbered bind variables can be used for which actual bind replacements are mentioned in CMD_BINDS <br>**E.g.</br><p>"C_MKTSEGMENT = :2 AND COBID = :1"**</p>In the above example values for bind variables are passed at run time, and derivation of value for bind variable according to the sequence is derived from CMD_BINDS</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimitted by Pipe **"\|"** symbol. <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpretted as keys from the variable values JSON object passed in at run-time</p> |
+| ADDITIONAL_FIELDS | No | This is where you specify any additional columns/fields to be added to generated SELECT clause from source, which is not available in source. <p>E.g.</p><p>TO_NUMBER(:1) COBID</p><p>would add a column to generated SELECT statement, where it is transforming bind variable value passed in at run time, and aliased as COBID, which would then become part of INSERT/MERGE statement</p> |
+| TEMP_TABLE | No | Acceptable values - Y/N/NULL <p>When set to Y, this would trigger creating a temporary table with the same name as target in the same schema as target, before the operation of the step is run.</p><p>This feature utilises special functionality that has been introduced in snowflake, that you can have permanent(or transient) table and a temporary table with the same name and temporary table is then given priority in the current running session.</p><p>In TiPS we utilise this functionality where a data pipeline can be run concurrently withing multiple sessions with its own bind variables and dataset are consistently transformed and published at session level</p> |
+
 ### TRUNCATE
+This command type is for running TRUNCATE sql command on the defined target.
+
+Following are the fields applicable for TRUNCATE command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_TGT | Yes | Specify the name of table from which data is to be deleted. <p>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |

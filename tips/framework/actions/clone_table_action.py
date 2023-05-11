@@ -11,11 +11,13 @@ class CloneTableAction(SqlAction):
     _source: str
     _target: str
     _tableMetaData: TableMetaData
+    _isTempTable: bool
 
-    def __init__(self, source: str, target: str, tableMetaData: TableMetaData) -> None:
+    def __init__(self, source: str, target: str, tableMetaData: TableMetaData, isTempTable: bool = False) -> None:
         self._source = source
         self._target = target
         self._tableMetaData = tableMetaData
+        self._isTempTable = isTempTable
         self.cloneMetadata()
 
     def getBinds(self) -> List[str]:
@@ -26,7 +28,7 @@ class CloneTableAction(SqlAction):
 
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="clone_table",
-            parameters={"source": self._source, "target": self._target},
+            parameters={"source": self._source, "target": self._target, "isTempTable": True if self._source == self._target else self._isTempTable},
         )
 
         retCmd.append(SQLCommand(cmd))

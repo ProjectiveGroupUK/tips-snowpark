@@ -50,7 +50,7 @@ class AppendAction(SqlAction):
         if self._isCreateTempTable:
             cmdStr: str = SQLTemplate().getTemplate(
                 sqlAction="clone_table",
-                parameters={"source": self._target, "target": self._target},
+                parameters={"source": self._target, "target": self._target, "isTempTable": True},
             )
 
             cmd.append(SQLCommand(cmdStr))
