@@ -38,14 +38,61 @@ This is the table where you populate information about each steps in a data pipe
 ### PROCESS_LOG
 This table holds logging information about each run of TiPS. This table is populated automatically at the end of execution of TiPS
 
+| Column Name | Description                     |
+|-------------| ------------------------------- |
+| PROCESS_LOG_ID | Sequentially generated ID|
+| PROCESS_NAME | Name of Data Pipeline that has been executed. |
+| PROCESS_LOG_CREATED_AT | Timestamp at which log records have been inserted to the table |
+| PROCESS_START_TIME | Timestamp of start of execution of Data Pipeline |
+| PROCESS_END_TIME | Timestamp of completion of execution of Data Pipeline |
+| PROCESS_ELAPSED_TIME_IN_SECONDS | Total time (in seconds) taken in execution of Data Pipeline |
+| EXECUTE_FLAG | Whether Data Pipeline was invoked with Execution Status. When EXECUTE_FLAG is passed as N, SQL statements are only generated and logged but not executed in the database |
+| STATUS | Status of Data Pipeline Execution |
+| ERROR_MESSAGE | If any steps errored, top level error message is populated here |
+| LOG_JSON | Complete Log information of Data Pipeline in JSON format. View `VW_PROCESS_LOG` displays flattened information of this column |
+
 ### PROCESS_DQ_TEST
-This table is populated with data relating to Data Quality Tests.
+This table is populated with data relating to Data Quality Tests. This table is shipped with some standard DQ Test definitions
+
+| Column Name | Description                     |
+|-------------| ------------------------------- |
+| PROCESS_DQ_TEST_ID | Sequentially generated ID|
+| PROCESS_DQ_TEST_NAME | Uniquely identifiable Name for Data Quality Test |
+| PROCESS_DQ_TEST_DESCRIPTION | Descriptive information about Data Quality Test |
+| PROCESS_DQ_TEST_QUERY_TEMPLATE | Query template to be used when running Data Quality Test. Identifiers within curly braces `{}` are replaces with actual values at run time |
+| PROCESS_DQ_TEST_ERROR_MESSAGE | Error Message to display when Test fails |
+| ACTIVE | TRUE/FALSE<p> When FALSE, data quality test would not run |
+
 
 ### PROCESS_CMD_TGT_DQ_TEST
 This is the table that you populate with the information to enforce a predefined Data Quality test to a target (table) and additionally an attribute (column) 
 
+| Column Name | Description                     |
+|-------------| ------------------------------- |
+| PROCESS_CMD_TGT_DQ_TEST_ID | Sequentially generated ID|
+| TGT_NAME | Specify the name of target on which Data Quality Test is to be run. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please.**</p><p>This should match target name defined on `PROCESS_CMD` table |
+| ATTRIBUTE_NAME | Enter column name on which Data Quality Test is to be run |
+| ACCEPTED_VALUES | For "Accepted Values" test, this should contain comma seperated values that are acceptable in the target.<p>E.g.</p><p>`'AFRICA','MIDDLE EAST','EUROPE','AMERICA'`</p> |
+| ERROR_AND_ABORT | TRUE/FALSE, indicating whether the process (data pipeline) should produce error and abort execution when this data quality test fails. When FALSE, process would just log warning and process would continue |
+| ACTIVE | TRUE/FALSE<p> When FALSE, data quality test would not run |
+
 ### PROCESS_DQ_LOG
 This table holds logging information about each Data Quality test execected withing a data pipeline when TiPS is run. This log is also associated to data in `PROCESS_LOG` table
+
+| Column Name | Description                     |
+|-------------| ------------------------------- |
+| PROCESS_DQ_LOG_ID | Sequentially generated ID |
+| PROCESS_LOG_ID | ID linking to record in `PROCESS_LOG` table |
+| TGT_NAME | Name of target on which data quality test was executed |
+| ATTRIBUTE_NAME | Attribute/Column on which data quality test was executed |
+| DQ_TEST_NAME | Data Quality Test Name |
+| DQ_TEST_QUERY | Transposed Query executed for the test |
+| DQ_TEST_RESULT | Array of values causing failure. For successul test, it should be an empty arrar `[]` |
+| START_TIME | Timestamp of start of execution of DQ Test Query |
+| END_TIME | Timestamp of completion of execution of DQ Test Query |
+| ELAPSED_TIME_IN_SECONDS | Total time (in seconds) taken in execution of DQ Test Query |
+| STATUS | Status of DQ Test. Values are `PASSED or ERROR or WARNING` |
+| STATUS_MESSAGE | Warning or Error Message returned |
 
 ## Command Types
 ### APPEND
