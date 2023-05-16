@@ -1,0 +1,16 @@
+INSERT INTO {{ kwargs['table_name'] }} (
+    {% for param_key, param_value in parameters.items() %}
+        {% if param_value is not none %}
+            {% if not loop.first %}, {% endif %}
+            {{param_key}}
+        {% endif %}
+    {% endfor %}
+)
+    {% for param_key, param_value in parameters.items() %}
+        {% if param_value is not none %}
+            {% if not loop.first %}, {% endif %}
+            {{param_value}}
+        {% endif %}
+    {% endfor %}
+FROM {{ kwargs['from_table_name'] }}
+WHERE {{ kwargs['where_clause'] }};

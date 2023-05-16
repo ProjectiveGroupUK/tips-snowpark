@@ -1,0 +1,19 @@
+SELECT dq.process_dq_test_id,
+       dq.process_dq_test_name,
+       dq.process_dq_test_description,
+       dq.process_dq_test_query_template,
+       dq.process_dq_test_error_message,
+       DECODE(dq.active,TRUE,'Y','N') AS dq_active,
+       dq_tgt.process_cmd_tgt_dq_test_id,
+       dq_tgt.tgt_name,
+       dq_tgt.attribute_name,
+       dq_tgt.error_and_abort,
+       dq_tgt.accepted_values,       
+       DECODE(dq_tgt.active,TRUE,'Y','N') AS active
+  FROM tips_md_schema.process_dq_test dq
+  LEFT JOIN tips_md_schema.process_cmd_tgt_dq_test dq_tgt
+    ON (dq.process_dq_test_name = dq_tgt.process_dq_test_name)
+  {% if parameters.dq_test_name != "ALL" %}
+  WHERE dq.process_dq_test_name = '{{ parameters.dq_test_name }}'
+  {% endif %}
+ ORDER BY dq.process_dq_test_id, dq_tgt.process_cmd_tgt_dq_test_id

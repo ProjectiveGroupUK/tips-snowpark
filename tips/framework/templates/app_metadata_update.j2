@@ -1,0 +1,9 @@
+UPDATE {{ kwargs['table_name'] }}
+SET
+    {% for param_key, param_value in parameters.items() if param_key not in kwargs['exclude_keys'] and param_value is not none %}
+        {% if param_key not in kwargs['exclude_keys'] and param_value is not none %}
+            {% if not loop.first %}, {% endif %}
+            {{param_key}} = {{param_value}}
+        {% endif %}
+    {% endfor %}
+WHERE {{ kwargs['where_clause'] }};
