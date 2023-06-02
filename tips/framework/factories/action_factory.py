@@ -101,7 +101,7 @@ class ActionFactory:
                 additionalFields=actionMetaData.getAdditionalFields(),
                 mergeOnFields=actionMetaData.getMergeOnFields(),
                 generateMergeMatchedClause=actionMetaData.isGenerateMergeMatchedClause(),
-                generateMergeWhenNotMatchedClause=actionMetaData.isGenerateMergeWhenNotMatchedClause,
+                generateMergeWhenNotMatchedClause=actionMetaData.isGenerateMergeWhenNotMatchedClause(),
                 isCreateTempTable=actionMetaData.isCreateTempTable(),
             )
         elif actionMetaData.getCmdType() == "PUBLISH_SCD2_DIM":
