@@ -49,8 +49,11 @@ class MergeAction(SqlAction):
         return self._binds
 
     def getCommands(self) -> List[object]:
-
         cmd: List[object] = []
+        insertFieldList: str = None
+        updateFieldList: str = None
+        valueFieldList: str = None
+
 
         ## if temp table flag is set on metadata, than create a temp table with same name as target
         ## in same schema
@@ -80,30 +83,32 @@ class MergeAction(SqlAction):
             mergeOnFieldList = " AND ".join(mergeList)
 
         ## Generate update column list
-        updateList: List = list()
-        for field in fieldClause:
-            if field not in self._mergeOnFields:
-                updateList.append(f"t.{field} = s.{field}")
+        if self._generateMergeMatchedClause:
+            updateList: List = list()
+            for field in fieldClause:
+                if field not in self._mergeOnFields:
+                    updateList.append(f"t.{field} = s.{field}")
 
-        if len(updateList) > 0:
-            updateFieldList = ", ".join(updateList)
+            if len(updateList) > 0:
+                updateFieldList = ", ".join(updateList)
 
         ## Generate insert column list
-        tgtTableColumns = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=True)
-        insertList: List = list()
-        valueList: List = list()
-        for field in tgtTableColumns:
-            if field.getColumnName() in fieldClause:
-                insertList.append(field.getColumnName())
-                valueList.append(f"s.{field.getColumnName()}")
-            elif field.getColumnName().endswith('_KEY') or field.getColumnName().endswith('_SEQ'):
-                if field.getSequenceName() is not None and field.getSequenceName() != "":
+        if self._generateMergeWhenNotMatchedClause:
+            tgtTableColumns = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=True)
+            insertList: List = list()
+            valueList: List = list()
+            for field in tgtTableColumns:
+                if field.getColumnName() in fieldClause:
                     insertList.append(field.getColumnName())
-                    valueList.append(f"{field.getSequenceName()}.nextval")
+                    valueList.append(f"s.{field.getColumnName()}")
+                elif field.getColumnName().endswith('_KEY') or field.getColumnName().endswith('_SEQ'):
+                    if field.getSequenceName() is not None and field.getSequenceName() != "":
+                        insertList.append(field.getColumnName())
+                        valueList.append(f"{field.getSequenceName()}.nextval")
 
-        if len(insertList) > 0:
-            insertFieldList = ", ".join(insertList)
-            valueFieldList = ", ".join(valueList)
+            if len(insertList) > 0:
+                insertFieldList = ", ".join(insertList)
+                valueFieldList = ", ".join(valueList)
 
         ## append quotes with bind variable
         cnt = 0
