@@ -12,7 +12,7 @@ class SQLTemplate:
     _templatePath = os.path.join("templates")
     # raise ValueError(f'templatePath = {_templatePath}')
 
-    def getTemplate(self, sqlAction: str, parameters: Dict) -> str:
+    def getTemplate(self, sqlAction: str, parameters: Dict, **kwargs) -> str:
         templateName = f"{sqlAction.lower().strip()}.j2"
         templateEnv = Environment(
             loader=PackageLoader(package_name="tips",package_path="framework/templates"), trim_blocks=True
@@ -20,7 +20,7 @@ class SQLTemplate:
         )
         cmd = (
             templateEnv.get_template(templateName)
-            .render(parameters=parameters)
+            .render(parameters=parameters, kwargs=kwargs)
             .strip()
             .replace("\n", " ")
         )
