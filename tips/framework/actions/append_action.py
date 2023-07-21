@@ -6,6 +6,8 @@ from tips.framework.metadata.additional_field import AdditionalField
 from tips.framework.metadata.table_metadata import TableMetaData
 from tips.framework.metadata.column_info import ColumnInfo
 from tips.framework.utils.sql_template import SQLTemplate
+from tips.framework.actions.clone_table_action import CloneTableAction
+from tips.framework.utils.globals import Globals
 
 
 class AppendAction(SqlAction):
@@ -42,18 +44,25 @@ class AppendAction(SqlAction):
         return self._binds
 
     def getCommands(self) -> List[object]:
+        globalsInstance = Globals()
 
         cmd: List[object] = []
 
         ## if temp table flag is set on metadata, than create a temp table with same name as target
         ## in same schema
-        if self._isCreateTempTable:
-            cmdStr: str = SQLTemplate().getTemplate(
-                sqlAction="clone_table",
-                parameters={"source": self._target, "target": self._target, "isTempTable": True},
+        if (
+            self._isCreateTempTable
+            and globalsInstance.isNotCalledFromNativeApp()  ## Native apps don't allow create table or create temporary table privilege
+        ):
+            cmd.append(
+                CloneTableAction(
+                    source=self._target,
+                    target=self._target,
+                    tableMetaData=self._metadata,
+                    isTempTable=True,
+                )
             )
 
-            cmd.append(SQLCommand(cmdStr))
         commonColumns: List[ColumnInfo] = self._metadata.getCommonColumns(
             self._source, self._target
         )
@@ -72,10 +81,26 @@ class AppendAction(SqlAction):
         cnt = 0
         while True:
             cnt += 1
-            if (self._whereClause is not None and f':{cnt}' in self._whereClause) or (selectList is not None and f':{cnt}' in selectList) or (fieldList is not None and f':{cnt}' in fieldList):
-                self._whereClause = self._whereClause.replace(f':{cnt}', f"':{cnt}'") if self._whereClause is not None else None
-                selectList = selectList.replace(f':{cnt}', f"':{cnt}'") if selectList is not None else None
-                fieldList = fieldList.replace(f':{cnt}', f"':{cnt}'") if fieldList is not None else None       
+            if (
+                (self._whereClause is not None and f":{cnt}" in self._whereClause)
+                or (selectList is not None and f":{cnt}" in selectList)
+                or (fieldList is not None and f":{cnt}" in fieldList)
+            ):
+                self._whereClause = (
+                    self._whereClause.replace(f":{cnt}", f"':{cnt}'")
+                    if self._whereClause is not None
+                    else None
+                )
+                selectList = (
+                    selectList.replace(f":{cnt}", f"':{cnt}'")
+                    if selectList is not None
+                    else None
+                )
+                fieldList = (
+                    fieldList.replace(f":{cnt}", f"':{cnt}'")
+                    if fieldList is not None
+                    else None
+                )
             else:
                 break
 

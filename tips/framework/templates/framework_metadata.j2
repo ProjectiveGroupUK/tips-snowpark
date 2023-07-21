@@ -11,8 +11,18 @@ SELECT p.process_id,
        NVL(p.active,'N') AS process_active,
        c.process_cmd_id,
        c.cmd_type,
-       c.cmd_src,
-       c.cmd_tgt,
+       CASE 
+         WHEN c.cmd_type != 'COPY_INTO_TABLE' 
+          AND regexp_count(c.cmd_src,'\\b.\\b',1) = 1 
+          THEN UPPER('{{ parameters.target_database }}'||'.'||c.cmd_src)
+          ELSE c.cmd_src
+       END AS cmd_src,
+       CASE 
+         WHEN c.cmd_type != 'COPY_INTO_FILE' 
+          AND regexp_count(c.cmd_tgt,'\\b.\\b',1) = 1 
+          THEN UPPER('{{ parameters.target_database }}'||'.'||c.cmd_tgt)
+          ELSE c.cmd_tgt
+       END AS cmd_tgt,
        c.cmd_where,
        c.cmd_binds,
        c.refresh_type,

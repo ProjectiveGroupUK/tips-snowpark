@@ -152,10 +152,14 @@ class FrameworkRunner:
                     cmdDQTests,
                     fwMetaData["FILE_FORMAT_NAME"],
                     fwMetaData["COPY_INTO_FILE_PARITITION_BY"],
+                    fwMetaData["PROCESS_CMD_ID"],
                 )
 
                 action = actionFactory.getAction(actionMetaData, tableMetaData, self)
                 runner = runnerFactory.getRunner(action)
+                ## Reset the sequence for sql statements within a process_cmd_id, so that sorting can be done on 
+                ## process_cmd_id and then order of execution of each sql within that process_cmd_id
+                self._globalsInstance.setSQLExecutionSequence(sqlExecutionSequence=0)
                 ret = runner.execute(action, self)
                 ##If any of the steps failed, then break the loop and exit
                 if ret == 1:

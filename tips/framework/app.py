@@ -1,5 +1,4 @@
 import json
-import re
 from typing import Dict, List
 from snowflake.snowpark import Session
 from tips.framework.factories.framework_factory import FrameworkFactory
@@ -11,14 +10,14 @@ from tips.framework.utils.globals import Globals
 
 # from tips.framework.utils.logger import Logger
 from datetime import datetime
-import argparse
 
 # Below is to initialise logging
 import logging
 from tips.utils.logger import Logger
 
 logger = logging.getLogger(Logger.getRootLoggerName())
-
+globalsInstance = Globals()
+globalsInstance.setCallerId(callerId='None')
 
 class App:
     _processName: str
@@ -34,6 +33,7 @@ class App:
         bindVariables: str,
         executeFlag: str,
         addLogFileHandler: bool = False,
+        targetDatabaseName: str = None,
     ) -> None:
         self._session = session
         self._processName = processName
@@ -46,8 +46,15 @@ class App:
         )
         self._executeFlag = executeFlag
         self._addLogFileHandler = addLogFileHandler
-        globalsInstance = Globals()
         globalsInstance.setSession(session=self._session)
+        if targetDatabaseName is not None:
+            globalsInstance.setTargetDatabase(targetDatabase=targetDatabaseName)
+        else:
+            targetDBName = self._session.sql("SELECT CURRENT_DATABASE() AS CURR_DB").collect()[0]["CURR_DB"]
+            globalsInstance.setTargetDatabase(targetDatabase=targetDBName)
+
+        # currRole = self._session.sql("SELECT CURRENT_ROLE() AS CURR_ROLE").collect()[0]["CURR_ROLE"]
+        # raise ValueError(currRole)
 
     def main(self) -> None:
         logger.debug("Inside framework app main")
@@ -59,6 +66,7 @@ class App:
 
         try:
             start_dt = datetime.now()
+
             framework: FrameworkMetaData = FrameworkFactory().getProcess(
                 self._processName
             )
@@ -99,7 +107,7 @@ class App:
                 # Now insert process run log to database
                 processEndTime = datetime.now()
                 results = self._session.sql(
-                    "SELECT TIPS_MD_SCHEMA.PROCESS_LOG_SEQ.NEXTVAL AS SEQVAL FROM DUAL"
+                    "SELECT TIPS_MD_SCHEMA.PROCESS_LOG_SEQ.NEXTVAL AS SEQVAL"
                 ).collect()
                 seqVal = results[0]["SEQVAL"]
 
@@ -108,6 +116,7 @@ class App:
                     .replace("'", "''")
                     .replace("\\n", " ")
                     .replace("\\r", "")
+                    .replace('\\"',"''")
                 )
 
                 sqlCommand = f"""
@@ -171,17 +180,42 @@ class App:
                 Logger().removeFileHandler()
 
 
-def run(session, process_name: str, vars: str, execute_flag: str) -> Dict:
+def run(
+    session,
+    process_name: str,
+    vars: str,
+    execute_flag: str,
+) -> Dict:
+    globalsInstance.setCallerId(callerId='Snowpark')
     app = App(
         session=session,
         processName=process_name,
         bindVariables=vars,
         executeFlag=execute_flag,
         addLogFileHandler=False,
+        targetDatabaseName=None
     )
     response: Dict = app.main()
     return response
 
+def run_sf_native_app(
+    session,
+    process_name: str,
+    vars: str,
+    execute_flag: str,
+    targetDatabaseName: str,
+) -> Dict:
+    globalsInstance.setCallerId(callerId='NativeApp')
+    app = App(
+        session=session,
+        processName=process_name,
+        bindVariables=vars,
+        executeFlag=execute_flag,
+        addLogFileHandler=False,
+        targetDatabaseName=targetDatabaseName
+    )
+    response: Dict = app.main()
+    return response
 
 def runLocal(
     session,

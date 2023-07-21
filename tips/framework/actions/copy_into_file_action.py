@@ -42,6 +42,9 @@ class CopyIntoFileAction(SqlAction):
 
     def getCommands(self) -> List[object]:
         retCmd: List[object] = []
+        globalsInstance = Globals()
+        session = globalsInstance.getSession()
+        targetDatabase = globalsInstance.getTargetDatabase()
 
         ## append quotes with bind variable
         cnt = 0
@@ -58,10 +61,7 @@ class CopyIntoFileAction(SqlAction):
 
         
         if self._pivotBy is not None and self._pivotField is not None:
-            #generate the distinct list of pivot fields
-            globalsInstance = Globals()
-            session = globalsInstance.getSession()
-            
+            #generate the distinct list of pivot fields           
             cmdStr = f"SELECT LISTAGG(DISTINCT ''''||{self._pivotBy}||'''',',') AS PIVOT_FIELD_LIST FROM {self._source}"
             results = session.sql(cmdStr).collect()
             pivotFieldList:str = results[0]['PIVOT_FIELD_LIST']
@@ -70,10 +70,37 @@ class CopyIntoFileAction(SqlAction):
         else:
             self._selectQuery = f"SELECT * FROM {self._source}"
 
+        ##Transpose stage name in filename with database and schema namespace
+        if self._target.startswith('@'):
+            slashPosition = self._target.find("/")
+            if slashPosition == -1: ##No slash(folder path exists)
+                stageName = self._target[1:]
+            else:
+                stageName = self._target[1:slashPosition]
+
+            ##Now check if there are any dots already. If there are 2 then we don't need to do anything
+            if stageName.count(".") == 2:
+                targetName = self._target
+            elif stageName.count(".") == 1:
+                if slashPosition == -1:
+                    targetName = f"@{targetDatabase}.{stageName}"
+                else:
+                    targetName = f"@{targetDatabase}.{stageName}{self._target[slashPosition:]}"
+            elif stageName.count(".") == 0:
+                currentSchema = session.sql("SELECT CURRENT_SCHEMA() AS CURR_SCHEMA").collect()[0]['CURR_SCHEMA']
+                if slashPosition == -1:
+                    targetName = f"@{targetDatabase}.{currentSchema}.{stageName}"
+                else:
+                    targetName = f"@{targetDatabase}.{currentSchema}.{stageName}{self._target[slashPosition:]}"
+            else:
+                targetName = self._target
+        else:
+            targetName = self._target
+
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="copy_into_file",
             parameters={
-                "fileName": self._target,
+                "fileName": targetName,
                 "selectQuery": self._selectQuery,
                 "whereClause": self._whereClause,
                 "partitionBy": self._copyIntoFilePartitionBy,

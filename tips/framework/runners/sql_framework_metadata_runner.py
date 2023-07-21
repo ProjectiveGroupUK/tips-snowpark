@@ -22,10 +22,11 @@ class SQLFrameworkMetaDataRunner(FrameworkMetaData):
 
         logger.info('Fetching Framework Metadata...')
         session = self._globalsInstance.getSession()
+        targetDatabase = self._globalsInstance.getTargetDatabase()
 
         cmdStr: str = SQLTemplate().getTemplate(
             sqlAction="framework_metadata",
-            parameters={"process_name": self._processName},
+            parameters={"process_name": self._processName, "target_database": targetDatabase},
         )
 
         results: List[Dict] = session.sql(cmdStr).collect()

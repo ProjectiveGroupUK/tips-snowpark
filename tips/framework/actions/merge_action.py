@@ -7,6 +7,7 @@ from tips.framework.metadata.additional_field import AdditionalField
 from tips.framework.metadata.table_metadata import TableMetaData
 from tips.framework.metadata.column_info import ColumnInfo
 from tips.framework.utils.sql_template import SQLTemplate
+from tips.framework.utils.globals import Globals
 
 
 class MergeAction(SqlAction):
@@ -18,7 +19,7 @@ class MergeAction(SqlAction):
     _additionalFields: List[AdditionalField]
     _mergeOnFields: list
     _generateMergeMatchedClause: bool
-    _generateMergeWhenNotMatchedClause: bool    
+    _generateMergeWhenNotMatchedClause: bool
     _isCreateTempTable: bool
 
     def __init__(
@@ -32,7 +33,7 @@ class MergeAction(SqlAction):
         mergeOnFields: list,
         generateMergeMatchedClause: bool,
         generateMergeWhenNotMatchedClause: bool,
-        isCreateTempTable: bool
+        isCreateTempTable: bool,
     ) -> None:
         self._source = source
         self._target = target
@@ -49,16 +50,26 @@ class MergeAction(SqlAction):
         return self._binds
 
     def getCommands(self) -> List[object]:
+        globalsInstance = Globals()
         cmd: List[object] = []
         insertFieldList: str = None
         updateFieldList: str = None
         valueFieldList: str = None
 
-
         ## if temp table flag is set on metadata, than create a temp table with same name as target
         ## in same schema
-        if self._isCreateTempTable:
-            cmd.append(CloneTableAction(source=self._target, target=self._target, tableMetaData=self._metadata, isTempTable=True))
+        if (
+            self._isCreateTempTable
+            and globalsInstance.isNotCalledFromNativeApp()  ## Native apps don't allow create table or create temporary table privilege
+        ):
+            cmd.append(
+                CloneTableAction(
+                    source=self._target,
+                    target=self._target,
+                    tableMetaData=self._metadata,
+                    isTempTable=True,
+                )
+            )
 
         commonColumns: List[ColumnInfo] = self._metadata.getCommonColumns(
             self._source, self._target
@@ -72,13 +83,13 @@ class MergeAction(SqlAction):
         fieldClause: List[str] = fieldLists.get("FieldClause")
 
         selectList = self._metadata.getCommaDelimited(selectClause)
-        
+
         mergeList: List = list()
         for fld in self._mergeOnFields:
             splittedField = fld.strip().lower()
             if splittedField != "":
                 mergeList.append(f"s.{splittedField} = t.{splittedField}")
-              
+
         if len(mergeList) > 0:
             mergeOnFieldList = " AND ".join(mergeList)
 
@@ -94,15 +105,22 @@ class MergeAction(SqlAction):
 
         ## Generate insert column list
         if self._generateMergeWhenNotMatchedClause:
-            tgtTableColumns = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=True)
+            tgtTableColumns = self._metadata.getColumns(
+                tableName=self._target, excludeVirtualColumns=True
+            )
             insertList: List = list()
             valueList: List = list()
             for field in tgtTableColumns:
                 if field.getColumnName() in fieldClause:
                     insertList.append(field.getColumnName())
                     valueList.append(f"s.{field.getColumnName()}")
-                elif field.getColumnName().endswith('_KEY') or field.getColumnName().endswith('_SEQ'):
-                    if field.getSequenceName() is not None and field.getSequenceName() != "":
+                elif field.getColumnName().endswith(
+                    "_KEY"
+                ) or field.getColumnName().endswith("_SEQ"):
+                    if (
+                        field.getSequenceName() is not None
+                        and field.getSequenceName() != ""
+                    ):
                         insertList.append(field.getColumnName())
                         valueList.append(f"{field.getSequenceName()}.nextval")
 
@@ -114,9 +132,19 @@ class MergeAction(SqlAction):
         cnt = 0
         while True:
             cnt += 1
-            if (self._whereClause is not None and f':{cnt}' in self._whereClause) or (selectList is not None and f':{cnt}' in selectList):
-                self._whereClause = self._whereClause.replace(f':{cnt}', f"':{cnt}'") if self._whereClause is not None else None
-                selectList = selectList.replace(f':{cnt}', f"':{cnt}'") if selectList is not None else None
+            if (self._whereClause is not None and f":{cnt}" in self._whereClause) or (
+                selectList is not None and f":{cnt}" in selectList
+            ):
+                self._whereClause = (
+                    self._whereClause.replace(f":{cnt}", f"':{cnt}'")
+                    if self._whereClause is not None
+                    else None
+                )
+                selectList = (
+                    selectList.replace(f":{cnt}", f"':{cnt}'")
+                    if selectList is not None
+                    else None
+                )
             else:
                 break
 
@@ -130,7 +158,7 @@ class MergeAction(SqlAction):
                 "mergeOnFieldList": mergeOnFieldList,
                 "updateFieldList": updateFieldList,
                 "insertFieldList": insertFieldList,
-                "valueFieldList": valueFieldList
+                "valueFieldList": valueFieldList,
             },
         )
 

@@ -38,6 +38,7 @@ class ActionFactory:
             else "SUCCESS",
             "error_message": "",
             "warning_message": "",
+            "process_cmd_id": actionMetaData.getProcessCmdId(),
             "action": actionMetaData.getCmdType(),
             "parameters": {
                 "source": actionMetaData.getSource(),
@@ -49,7 +50,6 @@ class ActionFactory:
             },
             "commands": [],
         }
-
 
         if actionMetaData.getCmdType() == "APPEND":
             logger.info("Running Append Action...")
@@ -81,7 +81,7 @@ class ActionFactory:
                 source=actionMetaData.getSource(),
                 target=actionMetaData.getTarget(),
                 binds=actionMetaData.getBinds(),
-                fileFormatName=actionMetaData.getFileFormatName()
+                fileFormatName=actionMetaData.getFileFormatName(),
             )
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")

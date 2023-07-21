@@ -15,9 +15,7 @@ logger = logging.getLogger(Logger.getRootLoggerName())
 
 
 class SQLRunner(Runner):
-    def execute(
-        self, action: Action, frameworkRunner
-    ) -> int:
+    def execute(self, action: Action, frameworkRunner) -> int:
         commandList: List[object] = action.getCommands()
         executeReturn: int = 0
         dqTestAbortSignal: bool = False
@@ -49,17 +47,18 @@ class SQLRunner(Runner):
             else:
                 return executeReturn
 
-    def executeSQL(
-        self, sql: SQLCommand, frameworkRunner
-    ) -> int:
+    def executeSQL(self, sql: SQLCommand, frameworkRunner) -> int:
         globalsInstance = Globals()
         session = globalsInstance.getSession()
-        
+        sqlExecutionSequence = globalsInstance.getSQLExecutionSequence() + 1
+        globalsInstance.setSQLExecutionSequence(
+            sqlExecutionSequence=sqlExecutionSequence
+        )
+
         dqTestAbort: bool = False
         sqlCommand: str = sql.getSqlCommand()
         logger.info(sqlCommand)
         dqLog: dict = {}
-
 
         if sql.getSqlBinds() is not None:
             cnt = 0
@@ -88,15 +87,14 @@ class SQLRunner(Runner):
 
         sqlJson: Dict = {
             "cmd_type": "SQL",
+            "cmd_sequence": sqlExecutionSequence,
             "status": "NO EXECUTE"
             if frameworkRunner.isExecute() == False
             else "SUCCESS",
             "error_message": "",
             "sql_cmd": sqlCommand,
             "cmd_status": {
-                "STATUS": "NO EXECUTE"
-                if frameworkRunner.isExecute() == False
-                else "OK"
+                "STATUS": "NO EXECUTE" if frameworkRunner.isExecute() == False else "OK"
             },
         }
 
@@ -111,7 +109,6 @@ class SQLRunner(Runner):
                 )
 
                 if type(results) == list and len(results) > 0:
-
                     for val in results:
                         if "number of rows deleted" in val:
                             sqlJson["cmd_status"]["ROWS_DELETED"] = val[
@@ -169,7 +166,9 @@ class SQLRunner(Runner):
                             sqlJson["cmd_status"]["STATUS"] = "ERROR"
                             ##Also propogate higher in the heirarchy
                             frameworkRunner.returnJson["steps"][-1]["status"] = "ERROR"
-                            frameworkRunner.returnJson["steps"][-1]["error_message"] = dqLog["status_message"]
+                            frameworkRunner.returnJson["steps"][-1][
+                                "error_message"
+                            ] = dqLog["status_message"]
                             frameworkRunner.returnJson["status"] = "ERROR"
                             frameworkRunner.returnJson["error_message"] = dqLog[
                                 "status_message"
@@ -187,9 +186,16 @@ class SQLRunner(Runner):
                             sqlJson["warning_message"] = dqLog["status_message"]
                             sqlJson["cmd_status"]["STATUS"] = "WARNING"
                             ##Also propogate higher in the heirarchy, if there is not already an ERROR reported
-                            if frameworkRunner.returnJson["steps"][-1]["status"] != "ERROR":
-                                frameworkRunner.returnJson["steps"][-1]["status"] = "WARNING"
-                                frameworkRunner.returnJson["steps"][-1]["warning_message"] = dqLog["status_message"]
+                            if (
+                                frameworkRunner.returnJson["steps"][-1]["status"]
+                                != "ERROR"
+                            ):
+                                frameworkRunner.returnJson["steps"][-1][
+                                    "status"
+                                ] = "WARNING"
+                                frameworkRunner.returnJson["steps"][-1][
+                                    "warning_message"
+                                ] = dqLog["status_message"]
 
                             if frameworkRunner.returnJson["status"] != "ERROR":
                                 frameworkRunner.returnJson["status"] = "WARNING"
@@ -207,9 +213,7 @@ class SQLRunner(Runner):
                 if sql.getSqlChecks() is not None and len(sql.getSqlChecks()) > 0:
                     for chk in sql.getSqlChecks():
                         for result in results:
-                            sqlJson["cmd_status"]["CHECK_CONDITION"] = chk[
-                                "condition"
-                            ]
+                            sqlJson["cmd_status"]["CHECK_CONDITION"] = chk["condition"]
                             if eval(f"result{chk['condition']}"):
                                 sqlJson["cmd_status"][
                                     "CHECK_CONDITION_STATUS"

@@ -1,27 +1,4 @@
-create or replace view VW_PROCESS_LOG(
-	PROCESS_LOG_ID,
-	PROCESS_NAME,
-	PROCESS_START_TIME,
-	PROCESS_END_TIME,
-	PROCESS_ELAPSED_TIME_IN_SECONDS,
-	EXECUTE_FLAG,
-	PROCESS_STATUS,
-	PROCESS_ERROR,
-	COMMAND_TYPE,
-	SOURCE,
-	TARGET,
-	SQL,
-	STEP_STATUS,
-	ROWS_INSERTED,
-	ROWS_UPDATED,
-	ROWS_DELETED,
-	ROWS_LOADED,
-	ROWS_UNLOADED,
-	EXECUTION_TIME_IN_SECS,
-	COMMAND_STATUS,
-	COMMAND_WARNING,
-	COMMAND_ERROR
-) as
+create or replace view VW_PROCESS_LOG as
 select pl.process_log_id
 , pl.process_name
 , pl.process_start_time
@@ -30,6 +7,8 @@ select pl.process_log_id
 , pl.execute_flag
 , pl.status AS process_status
 , pl.error_message AS process_error
+, stps.value:process_cmd_id::int AS process_cmd_id
+, cmds.value:cmd_sequence::int AS cmd_sequence
 , stps.value:action::varchar AS command_type
 , stps.value:parameters:source::varchar AS source
 , stps.value:parameters:target::varchar AS target
@@ -46,4 +25,5 @@ select pl.process_log_id
 , cmds.value:error_message::varchar AS command_error
 from process_log pl
 , lateral flatten(input => parse_json(log_json:steps), outer => true) stps
-, lateral flatten(input => parse_json(stps.value:commands), outer => true) cmds;
+, lateral flatten(input => parse_json(stps.value:commands), outer => true) cmds
+;

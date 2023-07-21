@@ -31,6 +31,9 @@ class CopyIntoTableAction(SqlAction):
 
     def getCommands(self) -> List[object]:
         retCmd: List[object] = []
+        globalsInstance = Globals()
+        session = globalsInstance.getSession()
+        targetDatabase = globalsInstance.getTargetDatabase()
 
         ## append quotes with bind variable
         # cnt = 0
@@ -45,11 +48,37 @@ class CopyIntoTableAction(SqlAction):
         #     else:
         #         break
 
+        ##Transpose stage name in filename with database and schema namespace
+        if self._source.startswith('@'):
+            slashPosition = self._source.find("/")
+            if slashPosition == -1: ##No slash(folder path exists)
+                stageName = self._source[1:]
+            else:
+                stageName = self._source[1:slashPosition]
+
+            ##Now check if there are any dots already. If there are 2 then we don't need to do anything
+            if stageName.count(".") == 2:
+                sourceName = self._source
+            elif stageName.count(".") == 1:
+                if slashPosition == -1:
+                    sourceName = f"@{targetDatabase}.{stageName}"
+                else:
+                    sourceName = f"@{targetDatabase}.{stageName}{self._source[slashPosition:]}"
+            elif stageName.count(".") == 0:
+                currentSchema = session.sql("SELECT CURRENT_SCHEMA() AS CURR_SCHEMA").collect()[0]['CURR_SCHEMA']
+                if slashPosition == -1:
+                    sourceName = f"@{targetDatabase}.{currentSchema}.{stageName}"
+                else:
+                    sourceName = f"@{targetDatabase}.{currentSchema}.{stageName}{self._source[slashPosition:]}"
+            else:
+                sourceName = self._source
+        else:
+            sourceName = self._source
         
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="copy_into_table",
             parameters={
-                "fileName": self._source,
+                "fileName": sourceName,
                 "tableName": self._target,
                 "fileFormatName": self._fileFormatName
             },
