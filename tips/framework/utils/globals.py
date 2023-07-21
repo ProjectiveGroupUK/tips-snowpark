@@ -29,7 +29,7 @@ class Globals:
         return self._session
     
     def setTargetDatabase(self, targetDatabase: str) -> None:
-        self._targetDatabase = targetDatabase
+        self._targetDatabase = targetDatabase.upper()
 
     def getTargetDatabase(self) -> str:
         return self._targetDatabase    
