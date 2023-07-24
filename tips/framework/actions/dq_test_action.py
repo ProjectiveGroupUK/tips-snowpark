@@ -2,6 +2,7 @@ import re
 from typing import List
 from tips.framework.actions.sql_action import SqlAction
 from tips.framework.actions.sql_command import SQLCommand
+from snowflake.snowpark.row import Row as snowparkRow
 
 
 class DQTestAction(SqlAction):
@@ -24,7 +25,11 @@ class DQTestAction(SqlAction):
         retCmd: List[object] = []
 
         if len(self._cmdDQTests) > 0:
-            for cmdDQTest in self._cmdDQTests:
+            for val in self._cmdDQTests:
+                if type(val) == snowparkRow:
+                    cmdDQTest = val.as_dict(True)
+                else:
+                    cmdDQTest = val
 
                 dqQuery = cmdDQTest["PROCESS_DQ_TEST_QUERY_TEMPLATE"].strip().upper()
                 dqQuery = re.sub(' +', ' ', dqQuery) ##remove any double spaces
@@ -39,6 +44,22 @@ class DQTestAction(SqlAction):
                     dqQuery = dqQuery.replace(
                         "{ACCEPTED_VALUES}", cmdDQTest["ACCEPTED_VALUES"]
                     )
+
+                dqError = cmdDQTest["PROCESS_DQ_TEST_ERROR_MESSAGE"].strip()
+                dqError = re.sub(' +', ' ', dqError) ##remove any double spaces
+
+                if "{COL_NAME}" in dqError:
+                    dqError = dqError.replace("{COL_NAME}", cmdDQTest["ATTRIBUTE_NAME"])
+
+                if "{TAB_NAME}" in dqError:
+                    dqError = dqError.replace("{TAB_NAME}", cmdDQTest["TGT_NAME"])
+
+                if "{ACCEPTED_VALUES}" in dqError:
+                    dqError = dqError.replace(
+                        "{ACCEPTED_VALUES}", cmdDQTest["ACCEPTED_VALUES"]
+                    )
+                dqError = dqError.replace("'",'') ## remove any single quotes in error message
+                cmdDQTest["DQ_ERROR_MESSAGE"] = dqError
 
                 if self._whereClause is not None and self._whereClause != "":
                     currentStr:str = None

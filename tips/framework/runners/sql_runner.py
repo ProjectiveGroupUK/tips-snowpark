@@ -40,7 +40,7 @@ class SQLRunner(Runner):
                         executeReturn = 1
                         break
 
-            ## If any one of the DQ Test had error and about, then we want the process to stop after
+            ## If any one of the DQ Test had error and abort, then we want the process to stop after
             ## runing all the tests in that step, hence returning 1
             if dqTestAbortSignal:
                 return 1
@@ -157,9 +157,11 @@ class SQLRunner(Runner):
                     if len(results) > 0:
                         if dqCheckDict["ERROR_AND_ABORT"]:
                             dqLog["status"] = "ERROR"
-                            dqLog[
-                                "status_message"
-                            ] = "DQ Test Failed with Error, process aborted!"
+                            dqLog["status_message"] = dqCheckDict["DQ_ERROR_MESSAGE"]
+
+                            # dqLog[
+                            #     "status_message"
+                            # ] = "DQ Test Failed with Error, process aborted!"
 
                             sqlJson["status"] = "ERROR"
                             sqlJson["error_message"] = dqLog["status_message"]
@@ -170,17 +172,18 @@ class SQLRunner(Runner):
                                 "error_message"
                             ] = dqLog["status_message"]
                             frameworkRunner.returnJson["status"] = "ERROR"
-                            frameworkRunner.returnJson["error_message"] = dqLog[
-                                "status_message"
-                            ]
+                            frameworkRunner.returnJson[
+                                "error_message"
+                            ] = "DQ Test Failed with Error, process aborted!"
 
                             dqTestAbort = True  ##Process Abort Indicator
 
                         else:
                             dqLog["status"] = "WARNING"
-                            dqLog[
-                                "status_message"
-                            ] = "Some of the DQ test(s) failed with warning, please check logs for more details!"
+                            dqLog["status_message"] = dqCheckDict["DQ_ERROR_MESSAGE"]
+                            # dqLog[
+                            #     "status_message"
+                            # ] = "Some of the DQ test(s) failed with warning, please check logs for more details!"
 
                             sqlJson["status"] = "WARNING"
                             sqlJson["warning_message"] = dqLog["status_message"]
@@ -199,9 +202,9 @@ class SQLRunner(Runner):
 
                             if frameworkRunner.returnJson["status"] != "ERROR":
                                 frameworkRunner.returnJson["status"] = "WARNING"
-                                frameworkRunner.returnJson["warning_message"] = dqLog[
-                                    "status_message"
-                                ]
+                                frameworkRunner.returnJson[
+                                    "warning_message"
+                                ] = "Some of the DQ test(s) failed with warning, please check logs for more details!"
 
                     else:
                         dqLog["status"] = "PASSED"
