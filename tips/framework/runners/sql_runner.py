@@ -217,7 +217,7 @@ class SQLRunner(Runner):
                     for chk in sql.getSqlChecks():
                         for result in results:
                             sqlJson["cmd_status"]["CHECK_CONDITION"] = chk["condition"]
-                            if eval(f"result{chk['condition']}"):
+                            if result['CNT'] > 0:
                                 sqlJson["cmd_status"][
                                     "CHECK_CONDITION_STATUS"
                                 ] = "FAILED"
