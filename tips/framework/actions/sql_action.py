@@ -4,7 +4,6 @@ import abc
 
 
 class SqlAction(Action):
-
     @abc.abstractclassmethod
     def getCommands() -> List[object]:
         pass
@@ -12,4 +11,3 @@ class SqlAction(Action):
     @abc.abstractclassmethod
     def getBinds() -> List[str]:
         pass
-      

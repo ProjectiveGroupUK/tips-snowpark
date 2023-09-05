@@ -15,10 +15,9 @@ class TruncateAction(SqlAction):
 
     def getCommands(self) -> List[object]:
         retCmd: List[object] = []
-        
+
         cmd: str = SQLTemplate().getTemplate(
-            sqlAction="truncate",
-            parameters={"target": self._target}
+            sqlAction="truncate", parameters={"target": self._target}
         )
 
         retCmd.append(SQLCommand(sqlCommand=cmd))

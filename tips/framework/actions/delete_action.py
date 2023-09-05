@@ -24,11 +24,14 @@ class DeleteAction(SqlAction):
         cnt = 0
         while True:
             cnt += 1
-            if (self._whereClause is not None and f':{cnt}' in self._whereClause):
-                self._whereClause = self._whereClause.replace(f':{cnt}', f"':{cnt}'") if self._whereClause is not None else None
+            if self._whereClause is not None and f":{cnt}" in self._whereClause:
+                self._whereClause = (
+                    self._whereClause.replace(f":{cnt}", f"':{cnt}'")
+                    if self._whereClause is not None
+                    else None
+                )
             else:
                 break
-
 
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="delete",

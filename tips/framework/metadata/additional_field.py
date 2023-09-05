@@ -1,4 +1,4 @@
-class AdditionalField():
+class AdditionalField:
     _expression: str
     _alias: str
 

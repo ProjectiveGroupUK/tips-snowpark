@@ -36,7 +36,6 @@ class OIRefreshAction(SqlAction):
         return self._binds
 
     def getCommands(self) -> List[object]:
-
         isOverwrite: bool = True
 
         cmd: List[object] = []

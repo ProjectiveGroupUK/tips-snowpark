@@ -49,9 +49,9 @@ class CopyIntoTableAction(SqlAction):
         #         break
 
         ##Transpose stage name in filename with database and schema namespace
-        if self._source.startswith('@'):
+        if self._source.startswith("@"):
             slashPosition = self._source.find("/")
-            if slashPosition == -1: ##No slash(folder path exists)
+            if slashPosition == -1:  ##No slash(folder path exists)
                 stageName = self._source[1:]
             else:
                 stageName = self._source[1:slashPosition]
@@ -63,9 +63,13 @@ class CopyIntoTableAction(SqlAction):
                 if slashPosition == -1:
                     sourceName = f"@{targetDatabase}.{stageName}"
                 else:
-                    sourceName = f"@{targetDatabase}.{stageName}{self._source[slashPosition:]}"
+                    sourceName = (
+                        f"@{targetDatabase}.{stageName}{self._source[slashPosition:]}"
+                    )
             elif stageName.count(".") == 0:
-                currentSchema = session.sql("SELECT CURRENT_SCHEMA() AS CURR_SCHEMA").collect()[0]['CURR_SCHEMA']
+                currentSchema = session.sql(
+                    "SELECT CURRENT_SCHEMA() AS CURR_SCHEMA"
+                ).collect()[0]["CURR_SCHEMA"]
                 if slashPosition == -1:
                     sourceName = f"@{targetDatabase}.{currentSchema}.{stageName}"
                 else:
@@ -74,13 +78,13 @@ class CopyIntoTableAction(SqlAction):
                 sourceName = self._source
         else:
             sourceName = self._source
-        
+
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="copy_into_table",
             parameters={
                 "fileName": sourceName,
                 "tableName": self._target,
-                "fileFormatName": self._fileFormatName
+                "fileFormatName": self._fileFormatName,
             },
         )
 

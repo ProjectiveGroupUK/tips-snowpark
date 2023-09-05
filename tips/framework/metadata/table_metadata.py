@@ -4,7 +4,6 @@ from tips.framework.metadata.column_info import ColumnInfo
 
 
 class TableMetaData:
-
     _metadata: Dict[str, List[ColumnInfo]]
 
     def __init__(self, metadata: Dict[str, List[ColumnInfo]]):
@@ -16,7 +15,6 @@ class TableMetaData:
     def getColumns(
         self, tableName: str, excludeVirtualColumns: bool
     ) -> List[ColumnInfo]:
-
         cols: List[ColumnInfo] = list()
 
         if excludeVirtualColumns:
@@ -33,7 +31,6 @@ class TableMetaData:
     def getCommonColumns(
         self, srcTableName: str, tgtTableName: str
     ) -> List[ColumnInfo]:
-
         commonColumns: List[ColumnInfo] = list()
 
         tgtColumns: List[ColumnInfo] = self.getColumns(tgtTableName, True)
@@ -42,7 +39,8 @@ class TableMetaData:
         if len(tgtColumns) > 0:
             for col in tgtColumns:
                 if any(
-                    col.getColumnName() == srcCol.getColumnName() for srcCol in srcColumns
+                    col.getColumnName() == srcCol.getColumnName()
+                    for srcCol in srcColumns
                 ):
                     commonColumns.append(col)
 
@@ -67,7 +65,6 @@ class TableMetaData:
         return seq_cols
 
     def getCommaDelimited(self, cols: list) -> str:
-
         separator = ", "
 
         return separator.join(cols)
@@ -77,7 +74,6 @@ class TableMetaData:
         commonColumns: List[ColumnInfo],
         additionalFields: List[AdditionalField],
     ) -> Dict[str, List[str]]:
-
         fieldLists: Dict[str, List[str]] = {}
 
         selectClause: List[str] = []

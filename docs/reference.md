@@ -59,7 +59,7 @@ This table is populated with data relating to Data Quality Tests. This table is 
 | PROCESS_DQ_TEST_ID | Sequentially generated ID|
 | PROCESS_DQ_TEST_NAME | Uniquely identifiable Name for Data Quality Test |
 | PROCESS_DQ_TEST_DESCRIPTION | Descriptive information about Data Quality Test |
-| PROCESS_DQ_TEST_QUERY_TEMPLATE | Query template to be used when running Data Quality Test. Identifiers within curly braces `{}` are replaces with actual values at run time |
+| PROCESS_DQ_TEST_QUERY_TEMPLATE | Query template to be used when running Data Quality Test. Identifiers within curly braces `{}` are replaced with actual values at run time. Bind variables can also be specified inside curly braces, e.g. `{:1}`, which is then replaced by [QUERY_BINDS in PROCESS_CMD_TGT_DQ_TEST](#process_cmd_tgt_dq_test) at runtime |
 | PROCESS_DQ_TEST_ERROR_MESSAGE | Error Message to display when Test fails |
 | ACTIVE | TRUE/FALSE<p> When FALSE, data quality test would not run |
 
@@ -73,6 +73,7 @@ This is the table that you populate with the information to enforce a predefined
 | TGT_NAME | Specify the name of target on which Data Quality Test is to be run. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please.**</p><p>This should match target name defined on `PROCESS_CMD` table |
 | ATTRIBUTE_NAME | Enter column name on which Data Quality Test is to be run |
 | ACCEPTED_VALUES | For "Accepted Values" test, this should contain comma separated values that are acceptable in the target.<p>E.g.</p><p>`'AFRICA','MIDDLE EAST','EUROPE','AMERICA'`</p> |
+| QUERY_BINDS | Here you can enter any arbitriary bind values that you want to be used in query template. Multiple values can be entered delimited by pipe. Bind variable defined in [PROCESS_DQ_TEST_QUERY_TEMPLATE in PROCESS_DQ_TEST](#process_dq_test) are replaced by these values in the sequence of order (starting from :1) at runtime |
 | ERROR_AND_ABORT | TRUE/FALSE, indicating whether the process (data pipeline) should produce error and abort execution when this data quality test fails. When FALSE, process would just log warning and process would continue |
 | ACTIVE | TRUE/FALSE<p> When FALSE, data quality test would not run |
 

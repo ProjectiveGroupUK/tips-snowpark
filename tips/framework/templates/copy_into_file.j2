@@ -8,6 +8,7 @@ FROM ({{ parameters.selectQuery }}
 PARTITION BY ({{ parameters.partitionBy }})
 {% else %}
 OVERWRITE = TRUE
+SINGLE = TRUE
 {% endif %}
 {% if parameters.fileFormatName is defined and parameters.fileFormatName != None and parameters.fileFormatName != '' %}
 FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
