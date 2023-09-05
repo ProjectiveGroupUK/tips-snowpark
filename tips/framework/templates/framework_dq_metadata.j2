@@ -22,6 +22,7 @@ SELECT a.process_id,
        c.process_dq_test_name,
        c.process_dq_test_query_template,
        b.accepted_values, 
+       b.query_binds,
        b.error_and_abort,
        c.process_dq_test_error_message
   FROM split_tgt a 

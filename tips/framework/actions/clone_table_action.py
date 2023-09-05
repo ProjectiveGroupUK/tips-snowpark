@@ -13,7 +13,13 @@ class CloneTableAction(SqlAction):
     _tableMetaData: TableMetaData
     _isTempTable: bool
 
-    def __init__(self, source: str, target: str, tableMetaData: TableMetaData, isTempTable: bool = False) -> None:
+    def __init__(
+        self,
+        source: str,
+        target: str,
+        tableMetaData: TableMetaData,
+        isTempTable: bool = False,
+    ) -> None:
         self._source = source
         self._target = target
         self._tableMetaData = tableMetaData
@@ -28,14 +34,19 @@ class CloneTableAction(SqlAction):
 
         cmd: str = SQLTemplate().getTemplate(
             sqlAction="clone_table",
-            parameters={"source": self._source, "target": self._target, "isTempTable": True if self._source == self._target else self._isTempTable},
+            parameters={
+                "source": self._source,
+                "target": self._target,
+                "isTempTable": True
+                if self._source == self._target
+                else self._isTempTable,
+            },
         )
 
         retCmd.append(SQLCommand(cmd))
 
         ## if it is normal clone command, drop any columns that are populated using sequences (key columns)
         if self._source != self._target:
-
             seqCols: List[ColumnInfo] = self._tableMetaData.getColumnsWithSequence(
                 self._source
             )

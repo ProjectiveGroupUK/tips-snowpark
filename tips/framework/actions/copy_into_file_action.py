@@ -59,21 +59,20 @@ class CopyIntoFileAction(SqlAction):
             else:
                 break
 
-        
         if self._pivotBy is not None and self._pivotField is not None:
-            #generate the distinct list of pivot fields           
+            # generate the distinct list of pivot fields
             cmdStr = f"SELECT LISTAGG(DISTINCT ''''||{self._pivotBy}||'''',',') AS PIVOT_FIELD_LIST FROM {self._source}"
             results = session.sql(cmdStr).collect()
-            pivotFieldList:str = results[0]['PIVOT_FIELD_LIST']
+            pivotFieldList: str = results[0]["PIVOT_FIELD_LIST"]
 
             self._selectQuery = f"SELECT * FROM {self._source} PIVOT({self._pivotField} FOR {self._pivotBy} IN ({pivotFieldList}))"
         else:
             self._selectQuery = f"SELECT * FROM {self._source}"
 
         ##Transpose stage name in filename with database and schema namespace
-        if self._target.startswith('@'):
+        if self._target.startswith("@"):
             slashPosition = self._target.find("/")
-            if slashPosition == -1: ##No slash(folder path exists)
+            if slashPosition == -1:  ##No slash(folder path exists)
                 stageName = self._target[1:]
             else:
                 stageName = self._target[1:slashPosition]
@@ -85,9 +84,13 @@ class CopyIntoFileAction(SqlAction):
                 if slashPosition == -1:
                     targetName = f"@{targetDatabase}.{stageName}"
                 else:
-                    targetName = f"@{targetDatabase}.{stageName}{self._target[slashPosition:]}"
+                    targetName = (
+                        f"@{targetDatabase}.{stageName}{self._target[slashPosition:]}"
+                    )
             elif stageName.count(".") == 0:
-                currentSchema = session.sql("SELECT CURRENT_SCHEMA() AS CURR_SCHEMA").collect()[0]['CURR_SCHEMA']
+                currentSchema = session.sql(
+                    "SELECT CURRENT_SCHEMA() AS CURR_SCHEMA"
+                ).collect()[0]["CURR_SCHEMA"]
                 if slashPosition == -1:
                     targetName = f"@{targetDatabase}.{currentSchema}.{stageName}"
                 else:
@@ -104,7 +107,7 @@ class CopyIntoFileAction(SqlAction):
                 "selectQuery": self._selectQuery,
                 "whereClause": self._whereClause,
                 "partitionBy": self._copyIntoFilePartitionBy,
-                "fileFormatName": self._fileFormatName
+                "fileFormatName": self._fileFormatName,
             },
         )
 

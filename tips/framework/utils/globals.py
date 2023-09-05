@@ -1,5 +1,6 @@
 from snowflake.snowpark import Session
 
+
 class Globals:
     _instance = None
     _session: Session
@@ -27,13 +28,13 @@ class Globals:
 
     def getSession(self) -> Session:
         return self._session
-    
+
     def setTargetDatabase(self, targetDatabase: str) -> None:
         self._targetDatabase = targetDatabase.upper()
 
     def getTargetDatabase(self) -> str:
-        return self._targetDatabase    
-    
+        return self._targetDatabase
+
     def setCallerId(self, callerId: str) -> None:
         self._callerId = callerId
 
@@ -41,13 +42,13 @@ class Globals:
         return self._callerId
 
     def isNotCalledFromNativeApp(self) -> bool:
-        if self._callerId == 'NativeApp':
+        if self._callerId == "NativeApp":
             return False
         else:
-            return True        
-        
+            return True
+
     def setSQLExecutionSequence(self, sqlExecutionSequence: int) -> None:
         self._sqlExecutionSequence = sqlExecutionSequence
 
     def getSQLExecutionSequence(self) -> int:
-        return self._sqlExecutionSequence    
+        return self._sqlExecutionSequence

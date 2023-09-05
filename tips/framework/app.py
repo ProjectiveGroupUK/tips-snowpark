@@ -1,3 +1,5 @@
+import os
+import sys
 import json
 from typing import Dict, List
 from snowflake.snowpark import Session
@@ -17,7 +19,8 @@ from tips.utils.logger import Logger
 
 logger = logging.getLogger(Logger.getRootLoggerName())
 globalsInstance = Globals()
-globalsInstance.setCallerId(callerId='None')
+globalsInstance.setCallerId(callerId="None")
+
 
 class App:
     _processName: str
@@ -50,7 +53,9 @@ class App:
         if targetDatabaseName is not None:
             globalsInstance.setTargetDatabase(targetDatabase=targetDatabaseName)
         else:
-            targetDBName = self._session.sql("SELECT CURRENT_DATABASE() AS CURR_DB").collect()[0]["CURR_DB"]
+            targetDBName = self._session.sql(
+                "SELECT CURRENT_DATABASE() AS CURR_DB"
+            ).collect()[0]["CURR_DB"]
             globalsInstance.setTargetDatabase(targetDatabase=targetDBName)
 
         # currRole = self._session.sql("SELECT CURRENT_ROLE() AS CURR_ROLE").collect()[0]["CURR_ROLE"]
@@ -116,7 +121,7 @@ class App:
                     .replace("'", "''")
                     .replace("\\n", " ")
                     .replace("\\r", "")
-                    .replace('\\"',"''")
+                    .replace('\\"', "''")
                 )
 
                 sqlCommand = f"""
@@ -173,6 +178,9 @@ class App:
 
             return runFramework
         except Exception as ex:
+            sys.tracebacklimit = (
+                None if os.environ.get("env", "dev") == "dev" else 0
+            )  ## Only show error trace in dev environment
             logger.error(ex)
             raise
         finally:
@@ -186,17 +194,18 @@ def run(
     vars: str,
     execute_flag: str,
 ) -> Dict:
-    globalsInstance.setCallerId(callerId='Snowpark')
+    globalsInstance.setCallerId(callerId="Snowpark")
     app = App(
         session=session,
         processName=process_name,
         bindVariables=vars,
         executeFlag=execute_flag,
         addLogFileHandler=False,
-        targetDatabaseName=None
+        targetDatabaseName=None,
     )
     response: Dict = app.main()
     return response
+
 
 def run_sf_native_app(
     session,
@@ -205,17 +214,18 @@ def run_sf_native_app(
     execute_flag: str,
     targetDatabaseName: str,
 ) -> Dict:
-    globalsInstance.setCallerId(callerId='NativeApp')
+    globalsInstance.setCallerId(callerId="NativeApp")
     app = App(
         session=session,
         processName=process_name,
         bindVariables=vars,
         executeFlag=execute_flag,
         addLogFileHandler=False,
-        targetDatabaseName=targetDatabaseName
+        targetDatabaseName=targetDatabaseName,
     )
     response: Dict = app.main()
     return response
+
 
 def runLocal(
     session,

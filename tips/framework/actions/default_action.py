@@ -3,7 +3,6 @@ from tips.framework.actions.sql_action import SqlAction
 
 
 class DefaultAction(SqlAction):
-
     def getBinds(self) -> List[str]:
         pass
 

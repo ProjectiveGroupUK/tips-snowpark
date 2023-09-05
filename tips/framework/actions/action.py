@@ -3,7 +3,6 @@ import abc
 
 
 class Action(abc.ABC):
-
     @abc.abstractclassmethod
     def getCommands() -> List[object]:
         pass

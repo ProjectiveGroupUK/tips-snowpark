@@ -3,8 +3,8 @@ import os
 from typing import Dict
 import re
 
-class SQLTemplate:
 
+class SQLTemplate:
     _templatePath = os.path.join(
         os.path.dirname(os.path.dirname(os.path.relpath(__file__))), "templates"
     )
@@ -15,7 +15,10 @@ class SQLTemplate:
     def getTemplate(self, sqlAction: str, parameters: Dict, **kwargs) -> str:
         templateName = f"{sqlAction.lower().strip()}.j2"
         templateEnv = Environment(
-            loader=PackageLoader(package_name="tips",package_path="framework/templates"), trim_blocks=True
+            loader=PackageLoader(
+                package_name="tips", package_path="framework/templates"
+            ),
+            trim_blocks=True
             # loader=FileSystemLoader(self._templatePath), trim_blocks=True
         )
         cmd = (

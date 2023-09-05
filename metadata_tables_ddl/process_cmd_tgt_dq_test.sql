@@ -1,10 +1,11 @@
-create or replace TABLE PROCESS_CMD_TGT_DQ_TEST (
-	PROCESS_CMD_TGT_DQ_TEST_ID NUMBER(38,0) NOT NULL autoincrement,
-	TGT_NAME VARCHAR(100) NOT NULL,
-	ATTRIBUTE_NAME VARCHAR(100),
-	PROCESS_DQ_TEST_NAME VARCHAR(100) NOT NULL,
-	ACCEPTED_VALUES VARCHAR(16777216),
-	ERROR_AND_ABORT BOOLEAN NOT NULL DEFAULT TRUE,
-	ACTIVE BOOLEAN NOT NULL DEFAULT TRUE,
-	primary key (PROCESS_CMD_TGT_DQ_TEST_ID)
+CREATE OR REPLACE TABLE process_cmd_tgt_dq_test (
+    process_cmd_tgt_dq_test_id  NUMBER(38,0) NOT NULL AUTOINCREMENT,
+    tgt_name                    VARCHAR(100) NOT NULL,
+    attribute_name              VARCHAR(100),
+    process_dq_test_name        VARCHAR(100) NOT NULL,
+    accepted_values             VARCHAR(16777216),
+    query_binds                 VARCHAR,
+    error_and_abort             BOOLEAN NOT NULL DEFAULT TRUE,
+    active                      BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (process_cmd_tgt_dq_test_id)
 );

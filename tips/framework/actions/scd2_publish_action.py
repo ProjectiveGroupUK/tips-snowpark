@@ -70,7 +70,9 @@ class SCD2PublishAction(SqlAction):
         ## Now clone the target table to an interim table
         interimTableName = f"{self._target.rsplit('.',1)[0].strip()}.SRC_{self._target.rsplit('.',1)[1].strip()}"
 
-        if globalsInstance.isNotCalledFromNativeApp():  ## Native apps don't allow create table or create temporary table privilege
+        if (
+            globalsInstance.isNotCalledFromNativeApp()
+        ):  ## Native apps don't allow create table or create temporary table privilege
             ##If called from NativeApp, this table should already exist
             cmd.append(
                 CloneTableAction(
@@ -140,12 +142,11 @@ class SCD2PublishAction(SqlAction):
         )
 
         ## check that all record in source are of same effective date
-        selectFieldClause = (
-            "count(distinct effective_start_date ) count_effective_start_date"
-        )
+        ## since the assertion is based on CNT = 0, hence minus one here
+        selectFieldClause = "count(distinct effective_start_date)-1 cnt"
         sqlChecks: List = list()
         sqlCheck: Dict = dict()
-        sqlCheck["condition"] = "['COUNT_EFFECTIVE_START_DATE'] > 1"
+        sqlCheck["condition"] = "['CNT'] != 0"
         sqlCheck[
             "error"
         ] = f"{self._source} should only contain records with one EFFECTIVE_START_DATE"

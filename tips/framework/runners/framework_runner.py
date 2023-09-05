@@ -157,7 +157,7 @@ class FrameworkRunner:
 
                 action = actionFactory.getAction(actionMetaData, tableMetaData, self)
                 runner = runnerFactory.getRunner(action)
-                ## Reset the sequence for sql statements within a process_cmd_id, so that sorting can be done on 
+                ## Reset the sequence for sql statements within a process_cmd_id, so that sorting can be done on
                 ## process_cmd_id and then order of execution of each sql within that process_cmd_id
                 self._globalsInstance.setSQLExecutionSequence(sqlExecutionSequence=0)
                 ret = runner.execute(action, self)
