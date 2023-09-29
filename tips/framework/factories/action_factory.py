@@ -15,6 +15,8 @@ from tips.framework.actions.dq_test_action import DQTestAction
 from tips.framework.metadata.action_metadata import ActionMetadata
 from tips.framework.metadata.table_metadata import TableMetaData
 
+from tips.framework.actions.copy_into_table_select_action import CopyIntoTableSelectAction
+
 # Below is to initialise logging
 import logging
 from tips.utils.logger import Logger
@@ -83,6 +85,14 @@ class ActionFactory:
                 binds=actionMetaData.getBinds(),
                 fileFormatName=actionMetaData.getFileFormatName(),
             )
+        elif actionMetaData.getCmdType() == "COPY_INTO_TABLE_SELECT":
+            logger.info("Running Copy Into Table From Select Action...")
+            action = CopyIntoTableSelectAction(
+                source=actionMetaData.getSource(),
+                target=actionMetaData.getTarget(),
+                binds=actionMetaData.getBinds(),
+                fileFormatName=actionMetaData.getFileFormatName(),
+            )            
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")
             action = DeleteAction(

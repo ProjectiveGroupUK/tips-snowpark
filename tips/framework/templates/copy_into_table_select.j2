@@ -1,0 +1,11 @@
+COPY INTO {{ parameters.tableName }} 
+FROM 
+(
+SELECT {{parameters.selectClause}}
+FROM {{parameters.fileName}}
+)
+{% if parameters.fileFormatName is defined and parameters.fileFormatName != None and parameters.fileFormatName != '' %}
+FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
+{% else %}
+FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
+{% endif %}
