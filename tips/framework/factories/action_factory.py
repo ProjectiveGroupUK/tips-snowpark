@@ -84,6 +84,8 @@ class ActionFactory:
                 target=actionMetaData.getTarget(),
                 binds=actionMetaData.getBinds(),
                 fileFormatName=actionMetaData.getFileFormatName(),
+                additonalFields=actionMetaData.getAdditionalFields(),
+                copyAutoMapping=actionMetaData.getCopyAutoMapping(),
             )
         elif actionMetaData.getCmdType() == "COPY_INTO_TABLE_ADD":        
             logger.info("Running Copy Into Table With Additional Fields Action...")

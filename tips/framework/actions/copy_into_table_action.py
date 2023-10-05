@@ -6,6 +6,7 @@ from tips.framework.metadata.column_info import ColumnInfo
 from tips.framework.metadata.table_metadata import TableMetaData
 from tips.framework.utils.sql_template import SQLTemplate
 from tips.framework.utils.globals import Globals
+from tips.framework.metadata.additional_field import AdditionalField
 
 
 class CopyIntoTableAction(SqlAction):
@@ -13,6 +14,9 @@ class CopyIntoTableAction(SqlAction):
     _target: str
     _binds: List[str]
     _fileFormatName: str
+    _additionalFields: List[AdditionalField]
+    _copyAutoMapping: str
+
 
     def __init__(
         self,
@@ -20,11 +24,15 @@ class CopyIntoTableAction(SqlAction):
         target: str,
         binds: List[str],
         fileFormatName: str,
+        additonalFields: List[AdditionalField],
+        copyAutoMapping: str
     ) -> None:
         self._source = source
         self._target = target
         self._binds = binds
         self._fileFormatName = fileFormatName
+        self._additionalFields = additonalFields
+        self._copyAutoMapping = copyAutoMapping
 
     def getBinds(self) -> List[str]:
         return self._binds
@@ -78,16 +86,33 @@ class CopyIntoTableAction(SqlAction):
                 sourceName = self._source
         else:
             sourceName = self._source
+        
+        #COPY INTO with MATCH_BY_COLUMN_NAME
+        if self._copyAutoMapping == 'Y' and len(self._additionalFields) == 0:
+            
+            cmd: str = SQLTemplate().getTemplate(
+                sqlAction="copy_into_table",
+                parameters={
+                    "fileName": sourceName,
+                    "tableName": self._target,
+                    "fileFormatName": self._fileFormatName,
+                    "copyMatchFields": self._copyAutoMapping
+                },
+            )
 
-        cmd: str = SQLTemplate().getTemplate(
-            sqlAction="copy_into_table",
-            parameters={
-                "fileName": sourceName,
-                "tableName": self._target,
-                "fileFormatName": self._fileFormatName,
-            },
-        )
+        #standard COPY INTO
+        else:
+            cmd: str = SQLTemplate().getTemplate(
+                sqlAction="copy_into_table",
+                parameters={
+                    "fileName": sourceName,
+                    "tableName": self._target,
+                    "fileFormatName": self._fileFormatName,
+                },
+            )
+
 
         retCmd.append(SQLCommand(sqlCommand=cmd, sqlBinds=self.getBinds()))
 
         return retCmd
+            

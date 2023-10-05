@@ -5,3 +5,6 @@ FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
 {% else %}
 FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
 {% endif %}
+{% if parameters.copyMatchFields is defined and parameters.copyMatchFields == 'Y' and parameters.copyMatchFields != 'N' %}
+MATCH_BY_COLUMN_NAME = 'CASE_INSENSITIVE'
+{% endif %}

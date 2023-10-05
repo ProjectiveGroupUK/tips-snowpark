@@ -12,6 +12,7 @@ create or replace TABLE PROCESS_CMD (
     GENERATE_MERGE_MATCHED_CLAUSE       VARCHAR(1),
     GENERATE_MERGE_NON_MATCHED_CLAUSE   VARCHAR(1),
     ADDITIONAL_FIELDS                   VARCHAR,
+    COPY_AUTO_MAPPING                   VARCHAR(1),
     TEMP_TABLE                          VARCHAR(1),
     CMD_PIVOT_BY                        VARCHAR,
     CMD_PIVOT_FIELD                     VARCHAR,
