@@ -45,6 +45,7 @@ class ColumnMetadata:
                     "APPEND",
                     "MERGE",
                     "PUBLISH_SCD2_DIM",
+                    "COPY_INTO_TABLE_ADD"
                 ):
                     # For all cmd_src
                     schemaName = (

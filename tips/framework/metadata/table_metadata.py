@@ -17,8 +17,9 @@ class TableMetaData:
     ) -> List[ColumnInfo]:
         cols: List[ColumnInfo] = list()
 
+
         if excludeVirtualColumns:
-            ### TBC
+            ## TBC
             if self._metadata.get(tableName) is not None:
                 for col in self._metadata.get(tableName):
                     if not col.isVirtual():
@@ -93,3 +94,17 @@ class TableMetaData:
         fieldLists["FieldClause"] = fieldClause
 
         return fieldLists
+    
+    def getDollarSelectClause(
+        self,
+        selectColumns: List[ColumnInfo],
+        additionalFields: List[AdditionalField],
+    ) -> List[str]:
+
+        selectClause = ['$'+str(i+1) for i in range(len(selectColumns))]
+        for af in additionalFields:
+            ## Only add the addtional column if an existing alias doesn't already exist.  Case sensitive at the moment
+            if af.getAlias() not in selectClause:
+                selectClause.append(af.getField())
+
+        return selectClause

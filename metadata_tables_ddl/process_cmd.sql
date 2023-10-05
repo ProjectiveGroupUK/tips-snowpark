@@ -1,7 +1,7 @@
 create or replace TABLE PROCESS_CMD (
     PROCESS_ID                          NUMBER(38,0) NOT NULL,
     PROCESS_CMD_ID                      NUMBER(38,0) NOT NULL,
-    CMD_TYPE                            VARCHAR(20) NOT NULL,
+    CMD_TYPE                            VARCHAR(27) NOT NULL,
     CMD_SRC                             VARCHAR,
     CMD_TGT                             VARCHAR NOT NULL,
     CMD_WHERE                           VARCHAR,
