@@ -86,17 +86,8 @@ class ActionFactory:
                 fileFormatName=actionMetaData.getFileFormatName(),
                 additonalFields=actionMetaData.getAdditionalFields(),
                 copyAutoMapping=actionMetaData.getCopyAutoMapping(),
+                metadata=metadata
             )
-        elif actionMetaData.getCmdType() == "COPY_INTO_TABLE_ADD":        
-            logger.info("Running Copy Into Table With Additional Fields Action...")
-            action = CopyIntoTableAddAction(
-                source=actionMetaData.getSource(),
-                target=actionMetaData.getTarget(),
-                binds=actionMetaData.getBinds(),
-                fileFormatName=actionMetaData.getFileFormatName(),
-                metadata=metadata,
-                additionalFields=actionMetaData.getAdditionalFields(),
-            )    
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")
             action = DeleteAction(

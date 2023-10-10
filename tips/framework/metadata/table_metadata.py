@@ -95,16 +95,13 @@ class TableMetaData:
 
         return fieldLists
     
-    def getDollarSelectClause(
+    def getDollarSelectOrdered(
         self,
+        srcColumnNames: List[str],
         selectColumns: List[ColumnInfo],
-        additionalFields: List[AdditionalField],
     ) -> List[str]:
 
-        selectClause = ['$'+str(i+1) for i in range(len(selectColumns))]
-        for af in additionalFields:
-            ## Only add the addtional column if an existing alias doesn't already exist.  Case sensitive at the moment
-            if af.getAlias() not in selectClause:
-                selectClause.append(af.getField())
+        #numbering select by source file order
+        selectClause = ['$'+str(srcColumnNames.index(col.getColumnName()) + 1) for col in selectColumns]
 
         return selectClause
