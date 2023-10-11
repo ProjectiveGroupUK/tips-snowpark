@@ -17,6 +17,7 @@ class CopyIntoTableAction(SqlAction):
     _additionalFields: List[AdditionalField]
     _copyAutoMapping: str
     _metadata: TableMetaData
+    _copyIntoForce: str
 
 
     def __init__(
@@ -27,7 +28,8 @@ class CopyIntoTableAction(SqlAction):
         fileFormatName: str,
         additonalFields: List[AdditionalField],
         copyAutoMapping: str,
-        metadata: TableMetaData
+        metadata: TableMetaData,
+        copyIntoForce: str
     ) -> None:
         self._source = source
         self._target = target
@@ -36,6 +38,7 @@ class CopyIntoTableAction(SqlAction):
         self._additionalFields = additonalFields
         self._copyAutoMapping = copyAutoMapping
         self._metadata = metadata
+        self._copyIntoForce = copyIntoForce
 
     def getBinds(self) -> List[str]:
         return self._binds
@@ -161,7 +164,8 @@ class CopyIntoTableAction(SqlAction):
                     "fileName": sourceName,
                     "tableName": self._target,
                     "fileFormatName": self._fileFormatName,
-                    "selectList": selectClause
+                    "selectList": selectClause,
+                    "copyIntoForce": self._copyIntoForce
                 },
             )
 
@@ -174,6 +178,7 @@ class CopyIntoTableAction(SqlAction):
                     "fileName": sourceName,
                     "tableName": self._target,
                     "fileFormatName": self._fileFormatName,
+                    "copyIntoForce": self._copyIntoForce
                 },
             )
 

@@ -5,3 +5,6 @@ FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
 {% else %}
 FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
 {% endif %}
+{% if parameters.copyIntoForce is defined and parameters.copyIntoForce != None and parameters.copyIntoForce == 'Y' %}
+FORCE = TRUE
+{% endif %}

@@ -153,7 +153,8 @@ class FrameworkRunner:
                     fwMetaData["FILE_FORMAT_NAME"],
                     fwMetaData["COPY_INTO_FILE_PARITITION_BY"],
                     fwMetaData["PROCESS_CMD_ID"],
-                    fwMetaData["COPY_AUTO_MAPPING"]
+                    fwMetaData["COPY_AUTO_MAPPING"],
+                    fwMetaData["COPY_INTO_FORCE"]
                 )
 
                 action = actionFactory.getAction(actionMetaData, tableMetaData, self)

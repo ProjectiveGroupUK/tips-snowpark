@@ -86,6 +86,7 @@ class ActionFactory:
                 fileFormatName=actionMetaData.getFileFormatName(),
                 additonalFields=actionMetaData.getAdditionalFields(),
                 copyAutoMapping=actionMetaData.getCopyAutoMapping(),
+                copyIntoForce=actionMetaData.getCopyIntoForce(),
                 metadata=metadata
             )
         elif actionMetaData.getCmdType() == "DELETE":

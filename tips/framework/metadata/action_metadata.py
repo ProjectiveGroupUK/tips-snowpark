@@ -23,6 +23,7 @@ class ActionMetadata:
     _copyIntoFilePartitionBy: str
     _processCmdId: int
     _copyAutoMapping: str
+    _copyIntoForce: str
 
     def __init__(
         self,
@@ -46,6 +47,7 @@ class ActionMetadata:
         copyIntoFilePartitionBy: str,
         processCmdId: int,
         copyAutoMapping: str,
+        copyIntoForce: str
     ) -> None:
         self._cmdType = cmdType
         self._source = source
@@ -67,6 +69,7 @@ class ActionMetadata:
         self._copyIntoFilePartitionBy = copyIntoFilePartitionBy
         self._processCmdId = processCmdId
         self._copyAutoMapping = copyAutoMapping
+        self._copyIntoForce = copyIntoForce
 
     def getCmdType(self) -> str:
         return self._cmdType
@@ -125,5 +128,8 @@ class ActionMetadata:
     def getProcessCmdId(self) -> int:
         return self._processCmdId
     
-    def getCopyAutoMapping(self) -> int:
+    def getCopyAutoMapping(self) -> str:
         return self._copyAutoMapping
+    
+    def getCopyIntoForce(self) -> str:
+        return self._copyIntoForce
