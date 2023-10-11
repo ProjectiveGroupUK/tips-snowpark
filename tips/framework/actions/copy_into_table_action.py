@@ -145,14 +145,8 @@ class CopyIntoTableAction(SqlAction):
             while True:
                 cnt += 1
                 if (
-                    #(self._whereClause is not None and f":{cnt}" in self._whereClause)
                     selectClause is not None and f":{cnt}" in selectClause
                 ):
-                    # self._whereClause = (
-                    #     self._whereClause.replace(f":{cnt}", f"':{cnt}'")
-                    #     if self._whereClause is not None
-                    #     else None
-                    # )
                     selectClause = (
                         selectClause.replace(f":{cnt}", f"':{cnt}'")
                         if selectClause is not None
@@ -182,7 +176,6 @@ class CopyIntoTableAction(SqlAction):
                     "fileFormatName": self._fileFormatName,
                 },
             )
-
 
         retCmd.append(SQLCommand(sqlCommand=cmd, sqlBinds=self.getBinds()))
 

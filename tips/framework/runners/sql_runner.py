@@ -57,7 +57,7 @@ class SQLRunner(Runner):
 
         dqTestAbort: bool = False
         sqlCommand: str = sql.getSqlCommand()
-        logger.info(sqlCommand)
+        
         dqLog: dict = {}
 
         if sql.getSqlBinds() is not None:
@@ -84,6 +84,8 @@ class SQLRunner(Runner):
                         if sqlCommand is not None
                         else None
                     )
+
+        logger.info(sqlCommand)
 
         sqlJson: Dict = {
             "cmd_type": "SQL",
