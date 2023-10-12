@@ -3,7 +3,6 @@ from tips.framework.actions.action import Action
 from tips.framework.actions.append_action import AppendAction
 from tips.framework.actions.copy_into_file_action import CopyIntoFileAction
 from tips.framework.actions.copy_into_table_action import CopyIntoTableAction
-from tips.framework.actions.copy_into_table_add_action import CopyIntoTableAddAction
 from tips.framework.actions.default_action import DefaultAction
 from tips.framework.actions.delete_action import DeleteAction
 from tips.framework.actions.di_refresh_action import DIRefreshAction
