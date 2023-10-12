@@ -6,6 +6,7 @@ from tips.framework.metadata.column_info import ColumnInfo
 from tips.framework.metadata.table_metadata import TableMetaData
 from tips.framework.utils.sql_template import SQLTemplate
 from tips.framework.utils.globals import Globals
+from tips.framework.metadata.additional_field import AdditionalField
 
 
 class CopyIntoTableAction(SqlAction):
@@ -13,6 +14,11 @@ class CopyIntoTableAction(SqlAction):
     _target: str
     _binds: List[str]
     _fileFormatName: str
+    _additionalFields: List[AdditionalField]
+    _copyAutoMapping: str
+    _metadata: TableMetaData
+    _copyIntoForce: str
+
 
     def __init__(
         self,
@@ -20,11 +26,19 @@ class CopyIntoTableAction(SqlAction):
         target: str,
         binds: List[str],
         fileFormatName: str,
+        additonalFields: List[AdditionalField],
+        copyAutoMapping: str,
+        metadata: TableMetaData,
+        copyIntoForce: str
     ) -> None:
         self._source = source
         self._target = target
         self._binds = binds
         self._fileFormatName = fileFormatName
+        self._additionalFields = additonalFields
+        self._copyAutoMapping = copyAutoMapping
+        self._metadata = metadata
+        self._copyIntoForce = copyIntoForce
 
     def getBinds(self) -> List[str]:
         return self._binds
@@ -78,16 +92,97 @@ class CopyIntoTableAction(SqlAction):
                 sourceName = self._source
         else:
             sourceName = self._source
+        
+        #auto field mapping or additinal fields requires select statement
+        if len(self._additionalFields) != 0 or self._copyAutoMapping == 'Y':
+            #target table field names
+            tgtColumns: List[ColumnInfo] = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=False)
 
-        cmd: str = SQLTemplate().getTemplate(
-            sqlAction="copy_into_table",
-            parameters={
-                "fileName": sourceName,
-                "tableName": self._target,
-                "fileFormatName": self._fileFormatName,
-            },
-        )
+            #remove additional fields from this list, added later with correct expression
+            addFieldAliases = [field.getAlias() for field in self._additionalFields]
+            tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
+            
+            #auto field mapping
+            if self._copyAutoMapping == 'Y':
+                #file_format parse_header required for infer_schema
+                alterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
+                                    SET PARSE_HEADER = TRUE SKIP_HEADER = 0'          
+                session.sql(alterFileFormat).collect()
+
+                #inferring fields in source
+                inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
+                                FROM TABLE(\
+                                    INFER_SCHEMA(\
+                                        LOCATION=>\'{sourceName}\',\
+                                        FILE_FORMAT=>\'{self._fileFormatName}\'))\
+                                ORDER BY ORDER_ID ASC;'
+                inferQueryRes = session.sql(inferQuery).collect()
+
+                #undo file_format alter
+                dealterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
+                                    SET PARSE_HEADER = FALSE SKIP_HEADER = 1'
+                session.sql(dealterFileFormat).collect()
+
+            
+                srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
+            
+                #fields in source and target
+                commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
+                
+                selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
+            
+            else:
+                #creating dollar select
+                selectList = ['$'+str(i+1) for i in range(len(tgtColumns))]
+
+            for af in self._additionalFields:
+                ## Only add the addtional column if an existing alias doesn't already exist.  Case sensitive at the moment
+                if af.getAlias() not in selectList:
+                    selectList.append(af.getField())          
+            
+            selectClause = self._metadata.getCommaDelimited(selectList)
+            
+
+            ## append quotes with bind variable
+            cnt = 0
+            while True:
+                cnt += 1
+                if (
+                    selectClause is not None and f":{cnt}" in selectClause
+                ):
+                    selectClause = (
+                        selectClause.replace(f":{cnt}", f"':{cnt}'")
+                        if selectClause is not None
+                        else None
+                    )
+                else:
+                    break
+            
+            cmd: str = SQLTemplate().getTemplate(
+                sqlAction="copy_into_table_from_select",
+                parameters={
+                    "fileName": sourceName,
+                    "tableName": self._target,
+                    "fileFormatName": self._fileFormatName,
+                    "selectList": selectClause,
+                    "copyIntoForce": self._copyIntoForce
+                },
+            )
+
+
+        #standard COPY INTO
+        else:
+            cmd: str = SQLTemplate().getTemplate(
+                sqlAction="copy_into_table",
+                parameters={
+                    "fileName": sourceName,
+                    "tableName": self._target,
+                    "fileFormatName": self._fileFormatName,
+                    "copyIntoForce": self._copyIntoForce
+                },
+            )
 
         retCmd.append(SQLCommand(sqlCommand=cmd, sqlBinds=self.getBinds()))
 
         return retCmd
+            

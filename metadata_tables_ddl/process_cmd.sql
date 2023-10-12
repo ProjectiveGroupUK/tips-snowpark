@@ -1,7 +1,7 @@
 create or replace TABLE PROCESS_CMD (
     PROCESS_ID                          NUMBER(38,0) NOT NULL,
     PROCESS_CMD_ID                      NUMBER(38,0) NOT NULL,
-    CMD_TYPE                            VARCHAR(20) NOT NULL,
+    CMD_TYPE                            VARCHAR(30) NOT NULL,
     CMD_SRC                             VARCHAR,
     CMD_TGT                             VARCHAR NOT NULL,
     CMD_WHERE                           VARCHAR,
@@ -12,6 +12,8 @@ create or replace TABLE PROCESS_CMD (
     GENERATE_MERGE_MATCHED_CLAUSE       VARCHAR(1),
     GENERATE_MERGE_NON_MATCHED_CLAUSE   VARCHAR(1),
     ADDITIONAL_FIELDS                   VARCHAR,
+    COPY_AUTO_MAPPING                   VARCHAR(1),
+    COPY_INTO_FORCE                     VARCHAR(1),
     TEMP_TABLE                          VARCHAR(1),
     CMD_PIVOT_BY                        VARCHAR,
     CMD_PIVOT_FIELD                     VARCHAR,

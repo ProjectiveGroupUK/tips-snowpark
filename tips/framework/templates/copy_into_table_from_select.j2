@@ -1,0 +1,14 @@
+COPY INTO {{ parameters.tableName }} 
+FROM 
+(
+SELECT {{ parameters.selectList }}
+FROM {{parameters.fileName}}
+)
+{% if parameters.fileFormatName is defined and parameters.fileFormatName != None and parameters.fileFormatName != '' %}
+FILE_FORMAT = (FORMAT_NAME = '{{ parameters.fileFormatName }}')
+{% else %}
+FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) 
+{% endif %}
+{% if parameters.copyIntoForce is defined and parameters.copyIntoForce != None and parameters.copyIntoForce == 'Y' %}
+FORCE = TRUE
+{% endif %}

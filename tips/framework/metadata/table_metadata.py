@@ -17,8 +17,9 @@ class TableMetaData:
     ) -> List[ColumnInfo]:
         cols: List[ColumnInfo] = list()
 
+
         if excludeVirtualColumns:
-            ### TBC
+            ## TBC
             if self._metadata.get(tableName) is not None:
                 for col in self._metadata.get(tableName):
                     if not col.isVirtual():
@@ -93,3 +94,14 @@ class TableMetaData:
         fieldLists["FieldClause"] = fieldClause
 
         return fieldLists
+    
+    def getDollarSelectOrdered(
+        self,
+        srcColumnNames: List[str],
+        selectColumns: List[ColumnInfo],
+    ) -> List[str]:
+
+        #numbering select by source file order
+        selectClause = ['$'+str(srcColumnNames.index(col.getColumnName()) + 1) for col in selectColumns]
+
+        return selectClause

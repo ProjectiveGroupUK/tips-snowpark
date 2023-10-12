@@ -3,6 +3,7 @@ from tips.framework.actions.action import Action
 from tips.framework.actions.append_action import AppendAction
 from tips.framework.actions.copy_into_file_action import CopyIntoFileAction
 from tips.framework.actions.copy_into_table_action import CopyIntoTableAction
+from tips.framework.actions.copy_into_table_add_action import CopyIntoTableAddAction
 from tips.framework.actions.default_action import DefaultAction
 from tips.framework.actions.delete_action import DeleteAction
 from tips.framework.actions.di_refresh_action import DIRefreshAction
@@ -14,6 +15,7 @@ from tips.framework.actions.truncate_action import TruncateAction
 from tips.framework.actions.dq_test_action import DQTestAction
 from tips.framework.metadata.action_metadata import ActionMetadata
 from tips.framework.metadata.table_metadata import TableMetaData
+
 
 # Below is to initialise logging
 import logging
@@ -82,6 +84,10 @@ class ActionFactory:
                 target=actionMetaData.getTarget(),
                 binds=actionMetaData.getBinds(),
                 fileFormatName=actionMetaData.getFileFormatName(),
+                additonalFields=actionMetaData.getAdditionalFields(),
+                copyAutoMapping=actionMetaData.getCopyAutoMapping(),
+                copyIntoForce=actionMetaData.getCopyIntoForce(),
+                metadata=metadata
             )
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")
