@@ -125,6 +125,14 @@ class FrameworkRunner:
                 isActive = True if fwMetaData["ACTIVE"] == "Y" else False
 
                 if fwMetaData["CMD_TYPE"] == "DQ_TEST":
+                    if len(frameworkDQMetaData) <= 0:
+                        cmdID = fwMetaData["PROCESS_CMD_ID"]
+                        self.returnJson["status"] = "ERROR"
+                        self.returnJson[
+                            "error_message"
+                        ] = f"No DQ Test data retreived for cmd_id {cmdID}. Please check that DQ Metadata has been setup correctly!"
+                        break
+
                     cmdDQTests = frameworkDQMetaData[fwMetaData["PROCESS_CMD_ID"]]
                 else:
                     cmdDQTests = []

@@ -91,7 +91,7 @@ class ActionFactory:
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")
             action = DeleteAction(
-                actionMetaData.getSource(),
+                actionMetaData.getTarget(),
                 actionMetaData.getWhereClause(),
                 actionMetaData.getBinds(),
             )

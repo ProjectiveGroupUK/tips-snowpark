@@ -14,10 +14,12 @@ logger = logging.getLogger(Logger.getRootLoggerName())
 
 class SQLFrameworkMetaDataRunner(FrameworkMetaData):
     _processName: str
+    _processCmdId: int
     _globalsInstance: Globals
 
-    def __init__(self, processName) -> None:
+    def __init__(self, processName: str, processCmdID: int = 0) -> None:
         self._processName = processName
+        self._processCmdId = processCmdID
         self._globalsInstance = Globals()
 
     def getMetaData(self) -> List[Dict]:
@@ -29,6 +31,7 @@ class SQLFrameworkMetaDataRunner(FrameworkMetaData):
             sqlAction="framework_metadata",
             parameters={
                 "process_name": self._processName,
+                "process_cmd_id": self._processCmdId,
                 "target_database": targetDatabase,
             },
         )
@@ -39,10 +42,15 @@ class SQLFrameworkMetaDataRunner(FrameworkMetaData):
     def getDQMetaData(self) -> Dict:
         logger.info("Fetching Framework DQ Metadata...")
         session = self._globalsInstance.getSession()
+        targetDatabase = self._globalsInstance.getTargetDatabase()
 
         cmdStr: str = SQLTemplate().getTemplate(
             sqlAction="framework_dq_metadata",
-            parameters={"process_name": self._processName},
+            parameters={
+                "process_name": self._processName,
+                "process_cmd_id": self._processCmdId,
+                "target_database": targetDatabase,
+            },
         )
 
         results: List[Dict] = session.sql(cmdStr).collect()
