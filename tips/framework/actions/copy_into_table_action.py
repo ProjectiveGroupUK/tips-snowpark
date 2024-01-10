@@ -107,21 +107,26 @@ class CopyIntoTableAction(SqlAction):
             #remove additional fields from this list, added later with correct expression
             addFieldAliases = [field.getAlias() for field in self._additionalFields]
             tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
-            
+
             #auto field mapping
             if self._copyAutoMapping == 'Y':
                 
                 #test if file is empty -> infer_schema not valid on empty files
                 #temporary file format without parse_header
-                currentSessionId = session.sql('SELECT CURRENT_SESSION()').collect()
+                currentSessionId = session.sql('SELECT CURRENT_SESSION() AS SESSION_ID').collect()[0]['SESSION_ID']
                 tempFileFormat = self._fileFormatName + '_' + currentSessionId
-                createTempFormat = f'CREATE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName};\
-                                    ALTER FILE FORMAT {tempFileFormat} SET PARSE_HEADER = FALSE'
+                createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'
                 session.sql(createTempFormat).collect()
+                alterTempFormat = f'ALTER FILE FORMAT {tempFileFormat} SET PARSE_HEADER = FALSE'
+                session.sql(alterTempFormat).collect()
 
                 #empty CSV will give a single row including header
-                csvSizeTest = f'SELECT COUNT(*) FROM {sourceName} (FILE_FORMAT => {tempFileFormat})'
-                csvRows = session.sql(csvSizeTest).collect()
+                csvSizeTest = f'SELECT COUNT(*) AS ROW_COUNT FROM {sourceName} (FILE_FORMAT => {tempFileFormat})'
+                csvRows = session.sql(csvSizeTest).collect()[0]['ROW_COUNT']
+
+                #drop temp file format
+                dropTempFormat = f'DROP FILE FORMAT {tempFileFormat}'
+                session.sql(dropTempFormat).collect()
 
                 if csvRows > 1:
                     emptyCsv = False
