@@ -9,6 +9,12 @@ from tips.framework.utils.globals import Globals
 from tips.framework.metadata.additional_field import AdditionalField
 
 
+# Below is to initialise logging
+import logging
+from tips.utils.logger import Logger
+
+logger = logging.getLogger(Logger.getRootLoggerName())
+
 class CopyIntoTableAction(SqlAction):
     _source: str
     _target: str
@@ -104,33 +110,59 @@ class CopyIntoTableAction(SqlAction):
             
             #auto field mapping
             if self._copyAutoMapping == 'Y':
-                #file_format parse_header required for infer_schema
-                alterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                    SET PARSE_HEADER = TRUE SKIP_HEADER = 0'          
-                session.sql(alterFileFormat).collect()
-
-                #inferring fields in source
-                inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
-                                FROM TABLE(\
-                                    INFER_SCHEMA(\
-                                        LOCATION=>\'{sourceName}\',\
-                                        FILE_FORMAT=>\'{self._fileFormatName}\'))\
-                                ORDER BY ORDER_ID ASC;'
-                inferQueryRes = session.sql(inferQuery).collect()
-
-                #undo file_format alter
-                dealterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                    SET PARSE_HEADER = FALSE SKIP_HEADER = 1'
-                session.sql(dealterFileFormat).collect()
-
-            
-                srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
-            
-                #fields in source and target
-                commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
                 
-                selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
+                #test if file is empty -> infer_schema not valid on empty files
+                #temporary file format without parse_header
+                currentSessionId = session.sql('SELECT CURRENT_SESSION()').collect()
+                tempFileFormat = self._fileFormatName + '_' + currentSessionId
+                createTempFormat = f'CREATE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName};\
+                                    ALTER FILE FORMAT {tempFileFormat} SET PARSE_HEADER = FALSE'
+                session.sql(createTempFormat).collect()
+
+                #empty CSV will give a single row including header
+                csvSizeTest = f'SELECT COUNT(*) FROM {sourceName} (FILE_FORMAT => {tempFileFormat})'
+                csvRows = session.sql(csvSizeTest).collect()
+
+                if csvRows > 1:
+                    emptyCsv = False
+                else:
+                    emptyCsv = True
+                
+                #if csv is not empty continue
+                if not emptyCsv:
+
+                    #file_format parse_header required for infer_schema
+                    alterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
+                                        SET PARSE_HEADER = TRUE SKIP_HEADER = 0'          
+                    session.sql(alterFileFormat).collect()
+
+                    #inferring fields in source
+                    inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
+                                    FROM TABLE(\
+                                        INFER_SCHEMA(\
+                                            LOCATION=>\'{sourceName}\',\
+                                            FILE_FORMAT=>\'{self._fileFormatName}\'))\
+                                    ORDER BY ORDER_ID ASC;'
+                    inferQueryRes = session.sql(inferQuery).collect()
+
+                    #undo file_format alter
+                    dealterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
+                                        SET PARSE_HEADER = FALSE SKIP_HEADER = 1'
+                    session.sql(dealterFileFormat).collect()
+
+                
+                    srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
             
+                    #fields in source and target
+                    commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
+                    
+                    selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
+                
+                #empty csv: no copy into command
+                else:
+                    logger.info("CSV file is empty. Skipping COPY INTO Command.")
+                    return None
+
             else:
                 #creating dollar select
                 selectList = ['$'+str(i+1) for i in range(len(tgtColumns))]
