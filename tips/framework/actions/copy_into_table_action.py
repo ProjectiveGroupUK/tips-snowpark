@@ -55,19 +55,6 @@ class CopyIntoTableAction(SqlAction):
         session = globalsInstance.getSession()
         targetDatabase = globalsInstance.getTargetDatabase()
 
-        ## append quotes with bind variable
-        # cnt = 0
-        # while True:
-        #     cnt += 1
-        #     if self._whereClause is not None and f":{cnt}" in self._whereClause:
-        #         self._whereClause = (
-        #             self._whereClause.replace(f":{cnt}", f"':{cnt}'")
-        #             if self._whereClause is not None
-        #             else None
-        #         )
-        #     else:
-        #         break
-
         ##Transpose stage name in filename with database and schema namespace
         if self._source.startswith("@"):
             slashPosition = self._source.find("/")
@@ -113,20 +100,11 @@ class CopyIntoTableAction(SqlAction):
                 
                 #test if file is empty -> infer_schema not valid on empty files
                 #temporary file format without parse_header
-                currentSessionId = session.sql('SELECT CURRENT_SESSION() AS SESSION_ID').collect()[0]['SESSION_ID']
-                tempFileFormat = self._fileFormatName + '_' + currentSessionId
-                createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'
-                session.sql(createTempFormat).collect()
-                alterTempFormat = f'ALTER FILE FORMAT {tempFileFormat} SET PARSE_HEADER = FALSE'
-                session.sql(alterTempFormat).collect()
+
 
                 #empty CSV will give a single row including header
-                csvSizeTest = f'SELECT COUNT(*) AS ROW_COUNT FROM {sourceName} (FILE_FORMAT => {tempFileFormat})'
+                csvSizeTest = f'SELECT COUNT(*) AS ROW_COUNT FROM {sourceName}'
                 csvRows = session.sql(csvSizeTest).collect()[0]['ROW_COUNT']
-
-                #drop temp file format
-                dropTempFormat = f'DROP FILE FORMAT {tempFileFormat}'
-                session.sql(dropTempFormat).collect()
 
                 if csvRows > 1:
                     emptyCsv = False
@@ -136,25 +114,30 @@ class CopyIntoTableAction(SqlAction):
                 #if csv is not empty continue
                 if not emptyCsv:
 
-                    #file_format parse_header required for infer_schema
-                    alterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                        SET PARSE_HEADER = TRUE SKIP_HEADER = 0'          
-                    session.sql(alterFileFormat).collect()
-
-                    #inferring fields in source
+                    #inferring fields in source - requires PARSE_HEADER = TRUE, SKIP_HEADER=0
+                    currentSessionId = session.sql('SELECT CURRENT_SESSION() AS SESSION_ID').collect()[0]['SESSION_ID']
+                    tempFileFormat = f'{targetDatabase}.TIPS_MD_SCHEMA.format_{currentSessionId}'
+                    #either use clone of given file format or create
+                    if self._fileFormatName != None:
+                        createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'
+                        session.sql(createTempFormat).collect()
+                        alterTempFormat = f'ALTER FILE FORMAT {tempFileFormat} SET SKIP_HEADER = 0, PARSE_HEADER = TRUE'
+                        session.sql(alterTempFormat).collect()
+                    else:
+                        createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} SKIP_HEADER = 0 PARSE_HEADER = TRUE'
+                        session.sql(alterTempFormat).collect()
+                    
                     inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
                                     FROM TABLE(\
                                         INFER_SCHEMA(\
                                             LOCATION=>\'{sourceName}\',\
-                                            FILE_FORMAT=>\'{self._fileFormatName}\'))\
+                                            FILE_FORMAT=>\'{tempFileFormat}\'))\
                                     ORDER BY ORDER_ID ASC;'
                     inferQueryRes = session.sql(inferQuery).collect()
 
-                    #undo file_format alter
-                    dealterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                        SET PARSE_HEADER = FALSE SKIP_HEADER = 1'
-                    session.sql(dealterFileFormat).collect()
-
+                    #drop temp file format
+                    dropTempFormat = f'DROP FILE FORMAT {tempFileFormat}'
+                    session.sql(dropTempFormat).collect()
                 
                     srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
             
@@ -165,8 +148,9 @@ class CopyIntoTableAction(SqlAction):
                 
                 #empty csv: no copy into command
                 else:
-                    logger.info("CSV file is empty. Skipping COPY INTO Command.")
                     return None
+                
+
 
             else:
                 #creating dollar select

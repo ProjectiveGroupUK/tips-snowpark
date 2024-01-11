@@ -92,8 +92,8 @@ class ActionFactory:
             #copyintotable can return no action
             if action.getCommands() == None:
                 logger.info("CSV file is empty. Skipping COPY INTO Command.")
-                actionJson["status"] = 'SKIPPED: CSV file is empty.'
-
+                actionJson['status'] = 'SKIPPED'
+                actionJson["warning_message"] = 'SKIPPED: CSV file is empty.'
 
         elif actionMetaData.getCmdType() == "DELETE":
             logger.info("Running Delete Action...")
