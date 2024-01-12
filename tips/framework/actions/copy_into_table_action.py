@@ -86,6 +86,26 @@ class CopyIntoTableAction(SqlAction):
         else:
             sourceName = self._source
         
+        def cmdBindSub(sqlCommand):
+            if self.getBinds() is not None:
+                cnt = 0
+                binds = self.getBinds()
+                for bind in binds:
+                    cnt += 1
+                    sqlCommand = (
+                        sqlCommand.replace(f":{cnt}", f"{bind}")
+                        if sqlCommand is not None
+                        else None
+                    )
+
+                    sqlCommand = (
+                        sqlCommand.replace(f":'{cnt}'", f"'{bind}'")
+                        if sqlCommand is not None
+                        else None
+                    )
+
+            return sqlCommand
+
         #auto field mapping or additinal fields requires select statement
         if len(self._additionalFields) != 0 or self._copyAutoMapping == 'Y':
             #target table field names
@@ -104,7 +124,7 @@ class CopyIntoTableAction(SqlAction):
 
                 #empty CSV will give a single row including header
                 csvSizeTest = f'SELECT COUNT(*) AS ROW_COUNT FROM {sourceName}'
-                csvRows = session.sql(csvSizeTest).collect()[0]['ROW_COUNT']
+                csvRows = session.sql(cmdBindSub(csvSizeTest)).collect()[0]['ROW_COUNT']
 
                 if csvRows > 1:
                     emptyCsv = False
@@ -120,12 +140,12 @@ class CopyIntoTableAction(SqlAction):
                     #either use clone of given file format or create
                     if self._fileFormatName != None:
                         createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'
-                        session.sql(createTempFormat).collect()
+                        session.sql(cmdBindSub(createTempFormat)).collect()
                         alterTempFormat = f'ALTER FILE FORMAT {tempFileFormat} SET SKIP_HEADER = 0, PARSE_HEADER = TRUE'
-                        session.sql(alterTempFormat).collect()
+                        session.sql(cmdBindSub(alterTempFormat)).collect()
                     else:
                         createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} SKIP_HEADER = 0 PARSE_HEADER = TRUE'
-                        session.sql(alterTempFormat).collect()
+                        session.sql(cmdBindSub(alterTempFormat)).collect()
                     
                     inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
                                     FROM TABLE(\
@@ -133,11 +153,11 @@ class CopyIntoTableAction(SqlAction):
                                             LOCATION=>\'{sourceName}\',\
                                             FILE_FORMAT=>\'{tempFileFormat}\'))\
                                     ORDER BY ORDER_ID ASC;'
-                    inferQueryRes = session.sql(inferQuery).collect()
+                    inferQueryRes = session.sql(cmdBindSub(inferQuery)).collect()
 
                     #drop temp file format
                     dropTempFormat = f'DROP FILE FORMAT {tempFileFormat}'
-                    session.sql(dropTempFormat).collect()
+                    session.sql(cmdBindSub(dropTempFormat)).collect()
                 
                     srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
             
