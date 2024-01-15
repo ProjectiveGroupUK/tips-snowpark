@@ -9,12 +9,6 @@ from tips.framework.utils.globals import Globals
 from tips.framework.metadata.additional_field import AdditionalField
 
 
-# Below is to initialise logging
-import logging
-from tips.utils.logger import Logger
-
-logger = logging.getLogger(Logger.getRootLoggerName())
-
 class CopyIntoTableAction(SqlAction):
     _source: str
     _target: str
@@ -110,10 +104,11 @@ class CopyIntoTableAction(SqlAction):
         if len(self._additionalFields) != 0 or self._copyAutoMapping == 'Y':
             #target table field names
             tgtColumns: List[ColumnInfo] = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=False)
-
+            
             #remove additional fields from this list, added later with correct expression
-            addFieldAliases = [field.getAlias() for field in self._additionalFields]
-            tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
+            if len(self._additionalFields) != 0:                
+                addFieldAliases = [field.getAlias() for field in self._additionalFields]
+                tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
 
             #auto field mapping
             if self._copyAutoMapping == 'Y':
@@ -163,7 +158,6 @@ class CopyIntoTableAction(SqlAction):
             
                     #fields in source and target
                     commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
-                    
                     selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
                 
                 #empty csv: no copy into command
