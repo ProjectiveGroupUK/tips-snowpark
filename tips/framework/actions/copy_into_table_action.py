@@ -104,11 +104,7 @@ class CopyIntoTableAction(SqlAction):
         if len(self._additionalFields) != 0 or self._copyAutoMapping == 'Y':
             #target table field names
             tgtColumns: List[ColumnInfo] = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=False)
-            
-            #remove additional fields from this list, added later with correct expression
-            if len(self._additionalFields) != 0:                
-                addFieldAliases = [field.getAlias() for field in self._additionalFields]
-                tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
+        
 
             #auto field mapping
             if self._copyAutoMapping == 'Y':
@@ -155,11 +151,17 @@ class CopyIntoTableAction(SqlAction):
                     session.sql(cmdBindSub(dropTempFormat)).collect()
                 
                     srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
-            
-                    #fields in source and target
-                    commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
-                    selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
-                
+
+                    #additional field's names
+                    addFieldAliases = [field.getAlias() for field in self._additionalFields]
+
+                    #fields existing in target and (source + additional fields)
+                    commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames or col.getColumnName() in addFieldAliases]
+
+                    #replace source fields with dollar selects
+                    selectList = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields,self._additionalFields)
+                    #returns lsit of $ selects and col-type for additional fields
+
                 #empty csv: no copy into command
                 else:
                     return None
@@ -167,13 +169,20 @@ class CopyIntoTableAction(SqlAction):
 
 
             else:
+                #remove additional fields from this list, added later with correct expression
+                if len(self._additionalFields) != 0:                
+                    addFieldAliases = [field.getAlias() for field in self._additionalFields]
+                    tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
+                
                 #creating dollar select
                 selectList = ['$'+str(i+1) for i in range(len(tgtColumns))]
 
-            for af in self._additionalFields:
-                ## Only add the addtional column if an existing alias doesn't already exist.  Case sensitive at the moment
-                if af.getAlias() not in selectList:
-                    selectList.append(af.getField())          
+                for af in self._additionalFields:
+                    ## Only add the addtional column if an existing alias doesn't already exist.  Case sensitive at the moment
+                    if af.getAlias() not in selectList:
+                        selectList.append(af.getField())
+            
+
             
             selectClause = self._metadata.getCommaDelimited(selectList)
             
