@@ -142,7 +142,8 @@ class CopyIntoTableAction(SqlAction):
                                     FROM TABLE(\
                                         INFER_SCHEMA(\
                                             LOCATION=>\'{sourceName}\',\
-                                            FILE_FORMAT=>\'{tempFileFormat}\'))\
+                                            FILE_FORMAT=>\'{tempFileFormat}\',\
+                                            MAX_RECORDS_PER_FILE => 1))\
                                     ORDER BY ORDER_ID ASC;'
                     inferQueryRes = session.sql(cmdBindSub(inferQuery)).collect()
 
