@@ -99,9 +99,17 @@ class TableMetaData:
         self,
         srcColumnNames: List[str],
         selectColumns: List[ColumnInfo],
+        additional_fields: List[AdditionalField]
     ) -> List[str]:
 
-        #numbering select by source file order
-        selectClause = ['$'+str(srcColumnNames.index(col.getColumnName()) + 1) for col in selectColumns]
+        af_aliasfield = {af.getAlias() : af.getField() for af in additional_fields}
+
+        selectClause = []
+        for col in selectColumns:
+            if col.getColumnName() in srcColumnNames:
+                selectClause.append('$'+str(srcColumnNames.index(col.getColumnName()) + 1))
+            #if not, then additional field
+            elif col.getColumnName() in af_aliasfield:
+                selectClause.append(af_aliasfield[col.getColumnName()])
 
         return selectClause
