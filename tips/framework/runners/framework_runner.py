@@ -59,7 +59,7 @@ class FrameworkRunner:
                     if fwMetaData["ADDITIONAL_FIELDS"] is not None
                     else ""
                 ).split("|"):
-                    splittedField = fld.strip()
+                    splittedField = fld.strip().upper()#making upper case to handle case-insensitively 
                     # Now split column and alias
                     if splittedField is not None and splittedField != "":
                         # In case expression and column alias have been delimited with multiple spaces, rather
