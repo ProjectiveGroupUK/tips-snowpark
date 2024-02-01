@@ -10,7 +10,6 @@ class SQLTemplate:
     )
 
     _templatePath = os.path.join("templates")
-    # raise ValueError(f'templatePath = {_templatePath}')
 
     def getTemplate(self, sqlAction: str, parameters: Dict, **kwargs) -> str:
         templateName = f"{sqlAction.lower().strip()}.j2"

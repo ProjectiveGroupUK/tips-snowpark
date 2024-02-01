@@ -97,6 +97,7 @@ class App:
                     processName=self._processName
                 )
 
+
             frameworkMetaData: List[Dict] = framework.getMetaData()
 
             if len(frameworkMetaData) <= 0:
@@ -252,11 +253,32 @@ class App:
 
                 taskCounter: int = 0
                 vars = json.dumps(self._bindVariables)
-
+                
                 currentWareHouse = self._warehouseName
 
                 transientTableList: list = []
                 taskDict: dict = {}  ## This would be needed later to enable tasks
+
+                ## Create root task
+                rootTaskName = f"{self._processName}_start_{self._runID}"
+                if globalsInstance.isNotCalledFromNativeApp():
+                    sqlCommand = f"""
+CREATE TASK {rootTaskName}
+WAREHOUSE={currentWareHouse}
+SCHEDULE='11520 MINUTE'
+AS 
+    SELECT 'ROOT TASK'
+"""
+                    results = self._session.sql(sqlCommand).collect()
+                else:
+                    sqlCommand = f"call tips_md_schema.setup_process_tasks('{targetDatabase}','CREATE_TASK', OBJECT_CONSTRUCT('root_task',TRUE,'task_name','{rootTaskName}','warehouse','{currentWareHouse}','process_name','{self._processName}','process_cmd_id','','run_id','{self._runID}','temp_table_flag','','target_table','','execute_flag','','vars',''))"
+                    results = self._session.sql(sqlCommand).collect()
+                    ret = json.loads(results[0]["SETUP_PROCESS_TASKS"])
+                    if ret["STATUS"] == "ERROR":
+                        raise ValueError(ret["ERROR_MESSAGE"])
+                
+                taskCounter += 1
+                taskDict["start"] = rootTaskName
 
                 # Loop through the metadata and setup tasks
                 for fwMetaData in frameworkMetaData:
@@ -321,14 +343,22 @@ END;
 
                     else:
                         parentTaskList = ""
-                        for parentCmdId in parentProcessCmdId:
-                            if parentTaskList == "":
-                                if globalsInstance.isNotCalledFromNativeApp():
-                                    parentTaskList = f"{self._processName}_{parentCmdId}_{self._runID}"
-                                else:
-                                    parentTaskList = f"transform.{self._processName}_{parentCmdId}_{self._runID}"
+
+                        if len(parentProcessCmdId) == 0:
+                            ##These are top level tasks
+                            if globalsInstance.isNotCalledFromNativeApp():
+                                parentTaskList = f"{rootTaskName}"
                             else:
-                                parentTaskList = f"{parentTaskList}, {self._processName}_{parentCmdId}_{self._runID}"
+                                parentTaskList = f"transform.{rootTaskName}"
+                        else:
+                            for parentCmdId in parentProcessCmdId:
+                                if parentTaskList == "":
+                                    if globalsInstance.isNotCalledFromNativeApp():
+                                        parentTaskList = f"{self._processName}_{parentCmdId}_{self._runID}"
+                                    else:
+                                        parentTaskList = f"transform.{self._processName}_{parentCmdId}_{self._runID}"
+                                else:
+                                    parentTaskList = f"{parentTaskList}, {self._processName}_{parentCmdId}_{self._runID}"
 
                         if globalsInstance.isNotCalledFromNativeApp():
                             sqlCommand = f"""
@@ -389,22 +419,20 @@ END;
 
                 ## If tasks have been created then enable all tasks and start executing the tasks
                 if len(taskDict) > 0:
-                    # Create an additional task, which drops all transient tables created in the process
-                    lastProcessCmdId = list(taskDict.keys())[-1]
-                    processCmdId = lastProcessCmdId + 10
-                    taskName = f"{self._processName}_{processCmdId}_{self._runID}"
+                    # Create an additional finaliser task, which drops all transient tables created in the process
+                    taskName = f"{self._processName}_finaliser_{self._runID}"
                     if globalsInstance.isNotCalledFromNativeApp():
                         parentTaskList = (
-                            f"{self._processName}_{lastProcessCmdId}_{self._runID}"
+                            f"{rootTaskName}"
                         )
                     else:
-                        parentTaskList = f"transform.{self._processName}_{lastProcessCmdId}_{self._runID}"
+                        parentTaskList = f"transform.{rootTaskName}"
                     warehouseToUse = currentWareHouse
                     if globalsInstance.isNotCalledFromNativeApp():
                         sqlCommand = f"""
 CREATE TASK {taskName}
 WAREHOUSE={warehouseToUse}
-AFTER {parentTaskList}
+FINALIZE = {parentTaskList}
 AS
 DECLARE
   temp_table_array VARIANT := PARSE_JSON('{str(transientTableList).replace("'", '"')}');
@@ -431,7 +459,7 @@ END;
                         if ret["STATUS"] == "ERROR":
                             raise ValueError(ret["ERROR_MESSAGE"])
 
-                    taskDict[processCmdId] = taskName
+                    taskDict["finaliser"] = taskName
 
                     if globalsInstance.isNotCalledFromNativeApp():
                         sqlCommand = (
@@ -614,6 +642,24 @@ def run(
     response: Dict = app.main()
     return response
 
+def runInDB(
+    session,
+    process_name: str,
+    vars: str,
+    execute_flag: str,
+    targetDatabaseName: str,
+) -> Dict:
+    globalsInstance.setCallerId(callerId="Snowpark")
+    app = App(
+        session=session,
+        processName=process_name,
+        bindVariables=vars,
+        executeFlag=execute_flag,
+        addLogFileHandler=False,
+        targetDatabaseName=targetDatabaseName,
+    )
+    response: Dict = app.main()
+    return response
 
 def runProcessWithTasks(
     session,

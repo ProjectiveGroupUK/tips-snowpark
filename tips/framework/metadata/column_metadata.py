@@ -114,8 +114,6 @@ class ColumnMetadata:
             for key in pkData:
                 # cmdStr = f"DESC TABLE {databaseName}.{key}"
                 # results: List[Dict] = session.sql(cmdStr).collect()
-                # print('@@@@@@@@@@@@@@@@@@@@@@@@@@')
-                # print(results)
                 cmdStr = f"SHOW PRIMARY KEYS IN {databaseName}.{key}"
                 results: List[Dict] = session.sql(cmdStr).collect()
                 for result in results:

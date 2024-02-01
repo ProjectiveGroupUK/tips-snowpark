@@ -49,19 +49,6 @@ class CopyIntoTableAction(SqlAction):
         session = globalsInstance.getSession()
         targetDatabase = globalsInstance.getTargetDatabase()
 
-        ## append quotes with bind variable
-        # cnt = 0
-        # while True:
-        #     cnt += 1
-        #     if self._whereClause is not None and f":{cnt}" in self._whereClause:
-        #         self._whereClause = (
-        #             self._whereClause.replace(f":{cnt}", f"':{cnt}'")
-        #             if self._whereClause is not None
-        #             else None
-        #         )
-        #     else:
-        #         break
-
         ##Transpose stage name in filename with database and schema namespace
         if self._source.startswith("@"):
             slashPosition = self._source.find("/")
@@ -93,44 +80,92 @@ class CopyIntoTableAction(SqlAction):
         else:
             sourceName = self._source
         
+        def cmdBindSub(sqlCommand):
+            if self.getBinds() is not None:
+                cnt = 0
+                binds = self.getBinds()
+                for bind in binds:
+                    cnt += 1
+                    sqlCommand = (
+                        sqlCommand.replace(f":{cnt}", f"{bind}")
+                        if sqlCommand is not None
+                        else None
+                    )
+
+                    sqlCommand = (
+                        sqlCommand.replace(f":'{cnt}'", f"'{bind}'")
+                        if sqlCommand is not None
+                        else None
+                    )
+
+            return sqlCommand
+
         #auto field mapping or additinal fields requires select statement
         if len(self._additionalFields) != 0 or self._copyAutoMapping == 'Y':
             #target table field names
             tgtColumns: List[ColumnInfo] = self._metadata.getColumns(tableName=self._target, excludeVirtualColumns=False)
-
-            #remove additional fields from this list, added later with correct expression
-            addFieldAliases = [field.getAlias() for field in self._additionalFields]
-            tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
             
+            #remove additional fields from this list, added later with correct expression
+            if len(self._additionalFields) != 0:                
+                addFieldAliases = [field.getAlias() for field in self._additionalFields]
+                tgtColumns = [col for col in tgtColumns if col.getColumnName() not in addFieldAliases]
+
             #auto field mapping
             if self._copyAutoMapping == 'Y':
-                #file_format parse_header required for infer_schema
-                alterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                    SET PARSE_HEADER = TRUE SKIP_HEADER = 0'          
-                session.sql(alterFileFormat).collect()
-
-                #inferring fields in source
-                inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
-                                FROM TABLE(\
-                                    INFER_SCHEMA(\
-                                        LOCATION=>\'{sourceName}\',\
-                                        FILE_FORMAT=>\'{self._fileFormatName}\'))\
-                                ORDER BY ORDER_ID ASC;'
-                inferQueryRes = session.sql(inferQuery).collect()
-
-                #undo file_format alter
-                dealterFileFormat = f'ALTER FILE FORMAT {self._fileFormatName}\
-                                    SET PARSE_HEADER = FALSE SKIP_HEADER = 1'
-                session.sql(dealterFileFormat).collect()
-
-            
-                srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
-            
-                #fields in source and target
-                commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
                 
-                selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
+                #test if file is empty -> infer_schema not valid on empty files
+                #temporary file format without parse_header
+
+
+                #empty CSV will give a single row including header
+                csvSizeTest = f'SELECT COUNT(*) AS ROW_COUNT FROM {sourceName}'
+                csvRows = session.sql(cmdBindSub(csvSizeTest)).collect()[0]['ROW_COUNT']
+
+                if csvRows > 1:
+                    emptyCsv = False
+                else:
+                    emptyCsv = True
+                
+                #if csv is not empty continue
+                if not emptyCsv:
+
+                    #inferring fields in source - requires PARSE_HEADER = TRUE, SKIP_HEADER=0
+                    currentSessionId = session.sql('SELECT CURRENT_SESSION() AS SESSION_ID').collect()[0]['SESSION_ID']
+                    tempFileFormat = f'{targetDatabase}.TIPS_MD_SCHEMA.format_{currentSessionId}'
+                    #either use clone of given file format or create
+                    if self._fileFormatName != None:
+                        createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'
+                        session.sql(cmdBindSub(createTempFormat)).collect()
+                        alterTempFormat = f'ALTER FILE FORMAT {tempFileFormat} SET SKIP_HEADER = 0, PARSE_HEADER = TRUE'
+                        session.sql(cmdBindSub(alterTempFormat)).collect()
+                    else:
+                        createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} SKIP_HEADER = 0 PARSE_HEADER = TRUE'
+                        session.sql(cmdBindSub(alterTempFormat)).collect()
+                    
+                    inferQuery =   f'SELECT UPPER(COLUMN_NAME) AS COLUMN_NAME\
+                                    FROM TABLE(\
+                                        INFER_SCHEMA(\
+                                            LOCATION=>\'{sourceName}\',\
+                                            FILE_FORMAT=>\'{tempFileFormat}\'))\
+                                    ORDER BY ORDER_ID ASC;'
+                    inferQueryRes = session.sql(cmdBindSub(inferQuery)).collect()
+
+                    #drop temp file format
+                    dropTempFormat = f'DROP FILE FORMAT {tempFileFormat}'
+                    session.sql(cmdBindSub(dropTempFormat)).collect()
+                
+                    srcColumnNames = [row.COLUMN_NAME for row in inferQueryRes]
             
+                    #fields in source and target
+                    commonFields = [col for col in tgtColumns if col.getColumnName() in srcColumnNames]
+                    selectList: List[str] = self._metadata.getDollarSelectOrdered(srcColumnNames, commonFields)
+                
+                #empty csv: no copy into command
+                else:
+                    return None
+                
+
+
             else:
                 #creating dollar select
                 selectList = ['$'+str(i+1) for i in range(len(tgtColumns))]

@@ -1,5 +1,6 @@
 CREATE OR REPLACE VIEW vw_process_log AS
-SELECT pl.process_log_id
+SELECT pl.run_id
+     , pl.process_log_id
      , pl.process_name
      , pl.process_start_time
      , pl.process_end_time

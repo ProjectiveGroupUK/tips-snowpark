@@ -1,7 +1,7 @@
 CREATE OR REPLACE TABLE process_cmd (
     process_id                          NUMBER(38,0) NOT NULL,
     process_cmd_id                      NUMBER(38,0) NOT NULL,
-    parent_process_cmd_id               VARCHAR,
+    parent_process_cmd_id               VARCHAR NOT NULL DEFAULT 'NONE',
     cmd_type                            VARCHAR(30) NOT NULL,
     cmd_src                             VARCHAR,
     cmd_tgt                             VARCHAR NOT NULL,

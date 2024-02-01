@@ -1,4 +1,6 @@
 from typing import List, Dict
+import json
+from graphlib import TopologicalSorter
 
 # from snowflake.snowpark import Session
 from tips.framework.metadata.framework_metadata import FrameworkMetaData
@@ -37,6 +39,23 @@ class SQLFrameworkMetaDataRunner(FrameworkMetaData):
         )
 
         results: List[Dict] = session.sql(cmdStr).collect()
+
+        ## Apply topological sorting to the returned resultset if more than one row returned in resultset
+        ## This is so that serial execution of steps of pipeline happen in correct order
+        if len(results) > 1:
+            graph = {}
+            rows = {}
+            for row in results:
+                graph[row['PROCESS_CMD_ID']] = list(map(int, json.loads(row['PARENT_PROCESS_CMD_ID'])))
+                rows[row['PROCESS_CMD_ID']] = row
+            ts = TopologicalSorter(graph)
+            sortedNodes = tuple(ts.static_order())
+            sortedResult = []
+            for node in sortedNodes:
+                sortedResult.append(rows[node])
+
+            results = sortedResult
+
         return results
 
     def getDQMetaData(self) -> Dict:

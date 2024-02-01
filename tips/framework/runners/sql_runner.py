@@ -57,7 +57,6 @@ class SQLRunner(Runner):
 
         dqTestAbort: bool = False
         sqlCommand: str = sql.getSqlCommand()
-        print(sqlCommand)
         
         dqLog: dict = {}
 

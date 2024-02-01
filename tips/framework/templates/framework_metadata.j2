@@ -15,7 +15,7 @@ WITH flatten_cmd_binds AS
 ),
 flatten_parent_cmd_ids AS
 (
-    SELECT a.process_id, a.process_cmd_id, ARRAY_UNIQUE_AGG(TRIM(b.value)) parent_process_cmd_id
+    SELECT a.process_id, a.process_cmd_id, ARRAY_UNIQUE_AGG(TRIM(NULLIF(b.value,'NONE'))) parent_process_cmd_id
       FROM process_cmd a,
       LATERAL split_to_table(a.parent_process_cmd_id,'|') b,
            process p
@@ -31,9 +31,10 @@ flatten_parent_cmd_ids AS
 SELECT p.process_id,
        p.process_name,
        p.process_description,
+       p.run_steps_in_parallel, 
        NVL(p.active,'N') AS process_active,
        c.process_cmd_id,
-       NVL(fpci.parent_process_cmd_id,LAG(c.process_cmd_id::VARCHAR) OVER (ORDER BY c.process_cmd_id)::array) parent_process_cmd_id,
+       NVL(fpci.parent_process_cmd_id,[]) AS parent_process_cmd_id,
        c.cmd_type,
        CASE 
          WHEN c.cmd_type != 'COPY_INTO_TABLE' 
@@ -67,7 +68,7 @@ SELECT p.process_id,
        NVL(c.active,'N') AS active,
        NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars,
        c.warehouse_size
-  FROM tips_md_schema.process P
+  FROM tips_md_schema.process p
   LEFT JOIN tips_md_schema.process_cmd c ON p.process_id = c.process_id
   LEFT JOIN flatten_cmd_binds fcb ON p.process_id = fcb.process_id
   LEFT JOIN flatten_parent_cmd_ids fpci ON c.process_id = fpci.process_id AND c.process_cmd_id = fpci.process_cmd_id
