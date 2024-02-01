@@ -136,3 +136,5 @@ dmypy.json
 
 # Streamlit Secrets file
 secrets.toml
+
+tips.zip
