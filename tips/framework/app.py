@@ -249,7 +249,6 @@ class App:
                 runFramework["error_message"] = err
             else:
                 logger.info("Fetched Framework Metadata!")
-                frameworkDQMetaData: List[Dict] = framework.getDQMetaData()
 
                 taskCounter: int = 0
                 vars = json.dumps(self._bindVariables)
@@ -281,8 +280,10 @@ AS
                 taskDict["start"] = rootTaskName
 
                 # Loop through the metadata and setup tasks
+                previousTaskName = rootTaskName
                 for fwMetaData in frameworkMetaData:
                     fwMetaData = fwMetaData.as_dict()
+                    runStepsInParallel = fwMetaData["RUN_STEPS_IN_PARALLEL"]
                     processCmdId = fwMetaData["PROCESS_CMD_ID"]
                     targetTable = fwMetaData["CMD_TGT"]
                     tempTableFlag = "Y" if fwMetaData["TEMP_TABLE"] == "Y" else "N"
@@ -301,49 +302,15 @@ AS
                         lst.append(warehouseSize)
                         warehouseToUse = "_".join(lst)
 
-                    if taskCounter == 0:
-                        # Root task
-                        rootTaskName = taskName
+                    parentTaskList = ""
+
+                    if not runStepsInParallel: 
+                        ##If run_steps_in_parallel has been set, then just use the previous task name, as the list is already sorted in topological sort order
                         if globalsInstance.isNotCalledFromNativeApp():
-                            sqlCommand = f"""
-CREATE TASK {taskName}
-WAREHOUSE={warehouseToUse}
-SCHEDULE='11520 MINUTE'
-AS
-DECLARE
-  retJSON VARIANT;
-  errorMessage VARCHAR;
-  errorReturned EXCEPTION (-20001, 'run_process_step for command id {processCmdId} returned error. Please check logs for further details!');
-  run_id VARCHAR := '{self._runID}';
-  temp_table_flag VARCHAR := '{tempTableFlag}';
-  target_table VARCHAR := '{targetTable}';
-  temp_table_array VARIANT := ARRAY_CONSTRUCT();
-  execute_flag VARCHAR := '{self._executeFlag}';
-BEGIN
-  retJSON := (call run_process_step('{self._processName}', {processCmdId}, '{vars}', '{self._executeFlag}', '{self._runID}'));
-  errorMessage := NULLIF(retJSON:error_message,'');
-
-  IF (errorMessage = NULL) THEN
-    RAISE errorReturned;
-  ELSE
-    --Only execute below in Execute Mode
-    IF (temp_table_flag = 'Y' AND execute_flag = 'Y') THEN
-        EXECUTE IMMEDIATE 'CREATE OR REPLACE TRANSIENT TABLE '||target_table||'_'||run_id||' CLONE '||target_table;
-    END IF;
-  END IF;
-END;
-"""
-                            results = self._session.sql(sqlCommand).collect()
+                            parentTaskList = f"{previousTaskName}"
                         else:
-                            sqlCommand = f"call tips_md_schema.setup_process_tasks('{targetDatabase}','CREATE_TASK', OBJECT_CONSTRUCT('root_task',TRUE,'task_name','{taskName}','warehouse','{warehouseToUse}','process_name','{self._processName}','process_cmd_id','{processCmdId}','run_id','{self._runID}','temp_table_flag','{tempTableFlag}','target_table','{targetTable}','execute_flag','{self._executeFlag}','vars','{vars}'))"
-                            results = self._session.sql(sqlCommand).collect()
-                            ret = json.loads(results[0]["SETUP_PROCESS_TASKS"])
-                            if ret["STATUS"] == "ERROR":
-                                raise ValueError(ret["ERROR_MESSAGE"])
-
-                    else:
-                        parentTaskList = ""
-
+                            parentTaskList = f"transform.{previousTaskName}"
+                    else:                        
                         if len(parentProcessCmdId) == 0:
                             ##These are top level tasks
                             if globalsInstance.isNotCalledFromNativeApp():
@@ -360,58 +327,58 @@ END;
                                 else:
                                     parentTaskList = f"{parentTaskList}, {self._processName}_{parentCmdId}_{self._runID}"
 
-                        if globalsInstance.isNotCalledFromNativeApp():
-                            sqlCommand = f"""
+                    if globalsInstance.isNotCalledFromNativeApp():
+                        sqlCommand = f"""
 CREATE TASK {taskName}
 WAREHOUSE={warehouseToUse}
 AFTER {parentTaskList}
 AS
 DECLARE
-  retJSON VARIANT;
-  errorMessage VARCHAR;
-  errorReturned EXCEPTION (-20001, 'run_process_step for command id {processCmdId} returned error. Please check logs for further details!');
-  run_id VARCHAR := '{self._runID}';
-  temp_table_flag VARCHAR := '{tempTableFlag}';
-  target_table VARCHAR := '{targetTable}';
-  temp_table_array VARIANT := PARSE_JSON('{str(transientTableList).replace("'", '"')}');
-  temp_table_cnt INTEGER;
-  execute_flag VARCHAR := '{self._executeFlag}';
+retJSON VARIANT;
+errorMessage VARCHAR;
+errorReturned EXCEPTION (-20001, 'run_process_step for command id {processCmdId} returned error. Please check logs for further details!');
+run_id VARCHAR := '{self._runID}';
+temp_table_flag VARCHAR := '{tempTableFlag}';
+target_table VARCHAR := '{targetTable}';
+temp_table_array VARIANT := PARSE_JSON('{str(transientTableList).replace("'", '"')}');
+temp_table_cnt INTEGER;
+execute_flag VARCHAR := '{self._executeFlag}';
 BEGIN
-  --If there are element in transientTableList, then create the temp version of those
-  temp_table_cnt := ARRAY_SIZE(temp_table_array);
-  --Only execute below in Execute Mode
-  IF (temp_table_cnt > 0 AND execute_flag = 'Y') THEN
-    FOR i in 0 TO temp_table_cnt-1 LOOP
-        LET transient_table_name := GET(temp_table_array,i)::VARCHAR;
-        LET temp_table_name := REPLACE(transient_table_name,'_{self._runID}');
-        EXECUTE IMMEDIATE 'CREATE OR REPLACE TEMPORARY TABLE '||temp_table_name||' CLONE '||transient_table_name;
-    END LOOP;
-  END IF;
-  retJSON := (call run_process_step('{self._processName}', {processCmdId}, '{vars}', '{self._executeFlag}','{self._runID}'));
-  errorMessage := NULLIF(retJSON:error_message,'');
+--If there are element in transientTableList, then create the temp version of those
+temp_table_cnt := ARRAY_SIZE(temp_table_array);
+--Only execute below in Execute Mode
+IF (temp_table_cnt > 0 AND execute_flag = 'Y') THEN
+FOR i in 0 TO temp_table_cnt-1 LOOP
+    LET transient_table_name := GET(temp_table_array,i)::VARCHAR;
+    LET temp_table_name := REPLACE(transient_table_name,'_{self._runID}');
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE TEMPORARY TABLE '||temp_table_name||' CLONE '||transient_table_name;
+END LOOP;
+END IF;
+retJSON := (call run_process_step('{self._processName}', {processCmdId}, '{vars}', '{self._executeFlag}','{self._runID}'));
+errorMessage := NULLIF(retJSON:error_message,'');
 
-  IF (errorMessage = NULL) THEN
-    RAISE errorReturned;
-  ELSE
-    --Only execute below in Execute Mode
-    IF (temp_table_flag = 'Y' AND execute_flag = 'Y') THEN
-        LET transient_table_name := target_table||'_'||run_id;
-        EXECUTE IMMEDIATE 'CREATE OR REPLACE TRANSIENT TABLE '||transient_table_name||' CLONE '||target_table;
-    END IF;
-  END IF;
+IF (errorMessage = NULL) THEN
+RAISE errorReturned;
+ELSE
+--Only execute below in Execute Mode
+IF (temp_table_flag = 'Y' AND execute_flag = 'Y') THEN
+    LET transient_table_name := target_table||'_'||run_id;
+    EXECUTE IMMEDIATE 'CREATE OR REPLACE TRANSIENT TABLE '||transient_table_name||' CLONE '||target_table;
+END IF;
+END IF;
 END;
 """
-                            results = self._session.sql(sqlCommand).collect()
-                        else:
-                            transTableList = str(transientTableList).replace("'", '"')
-                            sqlCommand = f"call tips_md_schema.setup_process_tasks('{targetDatabase}','CREATE_TASK', OBJECT_CONSTRUCT('root_task',FALSE,'task_name','{taskName}','warehouse','{warehouseToUse}','after','{parentTaskList}','process_name','{self._processName}','process_cmd_id','{processCmdId}','run_id','{self._runID}','temp_table_flag','{tempTableFlag}','target_table','{targetTable}','execute_flag','{self._executeFlag}','vars','{vars}','transient_table_list','{transTableList}'))"
-                            results = self._session.sql(sqlCommand).collect()
-                            ret = json.loads(results[0]["SETUP_PROCESS_TASKS"])
-                            if ret["STATUS"] == "ERROR":
-                                raise ValueError(ret["ERROR_MESSAGE"])
+                        results = self._session.sql(sqlCommand).collect()
+                    else:
+                        transTableList = str(transientTableList).replace("'", '"')
+                        sqlCommand = f"call tips_md_schema.setup_process_tasks('{targetDatabase}','CREATE_TASK', OBJECT_CONSTRUCT('root_task',FALSE,'task_name','{taskName}','warehouse','{warehouseToUse}','after','{parentTaskList}','process_name','{self._processName}','process_cmd_id','{processCmdId}','run_id','{self._runID}','temp_table_flag','{tempTableFlag}','target_table','{targetTable}','execute_flag','{self._executeFlag}','vars','{vars}','transient_table_list','{transTableList}'))"
+                        results = self._session.sql(sqlCommand).collect()
+                        ret = json.loads(results[0]["SETUP_PROCESS_TASKS"])
+                        if ret["STATUS"] == "ERROR":
+                            raise ValueError(ret["ERROR_MESSAGE"])
 
                     taskCounter += 1
-                    # previousTaskName = taskName
+                    previousTaskName = taskName
                     taskDict[processCmdId] = taskName
                     if tempTableFlag == "Y":
                         transientTableList.append(f"{targetTable}_{self._runID}")
