@@ -112,18 +112,22 @@ class ColumnMetadata:
             # Now loop through PK data and populate column list. This has to be done in 2 passes, as column information is only available in
             # DESC table command
             for key in pkData:
-                cmdStr = f"DESC TABLE {databaseName}.{key}"
+                # cmdStr = f"DESC TABLE {databaseName}.{key}"
+                # results: List[Dict] = session.sql(cmdStr).collect()
+                cmdStr = f"SHOW PRIMARY KEYS IN {databaseName}.{key}"
                 results: List[Dict] = session.sql(cmdStr).collect()
-
-                cmdStr = f"""SELECT "name" as column_name
-                               FROM table(result_scan(last_query_id()))
-                              WHERE "kind" = 'COLUMN'
-                                AND "primary key" = 'Y'"""
-
-                results: List[Dict] = session.sql(cmdStr).collect()
-
                 for result in results:
-                    pkData[key].append(result["COLUMN_NAME"])
+                    pkData[key].append(result["column_name"])
+
+                # cmdStr = f"""SELECT "name" as column_name
+                #                FROM table(result_scan(last_query_id()))
+                #               WHERE "kind" = 'COLUMN'
+                #                 AND "primary key" = 'Y'"""
+
+                # results: List[Dict] = session.sql(cmdStr).collect()
+
+                # for result in results:
+                #     pkData[key].append(result["COLUMN_NAME"])
 
             data = sorted(data, key=key_func)
 

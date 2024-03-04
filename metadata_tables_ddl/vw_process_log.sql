@@ -1,29 +1,32 @@
-create or replace view VW_PROCESS_LOG as
-select pl.process_log_id
-, pl.process_name
-, pl.process_start_time
-, pl.process_end_time
-, pl.process_elapsed_time_in_seconds
-, pl.execute_flag
-, pl.status AS process_status
-, pl.error_message AS process_error
-, stps.value:process_cmd_id::int AS process_cmd_id
-, cmds.value:cmd_sequence::int AS cmd_sequence
-, stps.value:action::varchar AS command_type
-, stps.value:parameters:source::varchar AS source
-, stps.value:parameters:target::varchar AS target
-, cmds.value:sql_cmd::varchar AS sql
-, cmds.value:status::varchar AS step_status
-, cmds.value:cmd_status:ROWS_INSERTED AS ROWS_INSERTED
-, cmds.value:cmd_status:ROWS_UPDATED AS ROWS_UPDATED
-, cmds.value:cmd_status:ROWS_DELETED AS ROWS_DELETED
-, cmds.value:cmd_status:ROWS_LOADED AS ROWS_LOADED
-, cmds.value:cmd_status:ROWS_UNLOADED AS ROWS_UNLOADED
-, cmds.value:cmd_status:EXECUTION_TIME_IN_SECS AS execution_time_in_secs
-, cmds.value:cmd_status:STATUS::varchar AS command_status
-, cmds.value:warning_message::varchar AS command_warning
-, cmds.value:error_message::varchar AS command_error
-from process_log pl
-, lateral flatten(input => parse_json(log_json:steps), outer => true) stps
-, lateral flatten(input => parse_json(stps.value:commands), outer => true) cmds
+CREATE OR REPLACE VIEW vw_process_log AS
+SELECT pl.run_id
+     , pl.process_log_id
+     , pl.process_name
+     , pl.process_start_time
+     , pl.process_end_time
+     , pl.process_elapsed_time_in_seconds
+     , pl.execute_flag
+     , pl.status                                    AS process_status
+     , pl.error_message                             AS process_error
+     , stps.value:process_cmd_id::INT               AS process_cmd_id
+     , cmds.value:cmd_sequence::INT                 AS cmd_sequence
+     , stps.value:action::VARCHAR                   AS command_type
+     , stps.value:parameters:source::VARCHAR        AS source
+     , stps.value:parameters:target::VARCHAR        AS target
+     , cmds.value:sql_cmd::VARCHAR                  AS sql
+     , cmds.value:status::VARCHAR                   AS step_status
+     /* Last element in following have to be in uppercase, as that's how it is captured in JSON -> */
+     , cmds.value:cmd_status:ROWS_INSERTED          AS rows_inserted
+     , cmds.value:cmd_status:ROWS_UPDATED           AS rows_updated
+     , cmds.value:cmd_status:ROWS_DELETED           AS rows_deleted
+     , cmds.value:cmd_status:ROWS_LOADED            AS rows_loaded
+     , cmds.value:cmd_status:ROWS_UNLOADED          AS rows_unloaded
+     , cmds.value:cmd_status:EXECUTION_TIME_IN_SECS AS execution_time_in_secs
+     , cmds.value:cmd_status:STATUS::VARCHAR        AS command_status
+     /* <- for the above lines */
+     , cmds.value:warning_message::VARCHAR          AS command_warning
+     , cmds.value:error_message::VARCHAR            AS command_error
+  FROM process_log pl
+, LATERAL FLATTEN(input => PARSE_JSON(log_json:steps), outer => TRUE) stps
+, LATERAL FLATTEN(input => PARSE_JSON(stps.value:commands), outer => TRUE) cmds
 ;

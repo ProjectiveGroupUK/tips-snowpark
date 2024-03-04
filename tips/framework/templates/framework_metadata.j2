@@ -2,14 +2,39 @@ WITH flatten_cmd_binds AS
 (
     SELECT a.process_id, ARRAY_UNIQUE_AGG(TRIM(b.value)) bind_var_list
       FROM process_cmd a,
-      LATERAL split_to_table(a.cmd_binds,'|') b
+      LATERAL split_to_table(a.cmd_binds,'|') b,
+           process p
+     WHERE a.process_id = p.process_id
+  {% if parameters.process_name != "ALL" %}
+      AND p.process_name = '{{ parameters.process_name }}'
+  {% endif %}
+  {% if parameters.process_cmd_id > 0 %}
+      AND a.process_cmd_id = {{ parameters.process_cmd_id }}
+  {% endif %}
     GROUP BY a.process_id
+),
+flatten_parent_cmd_ids AS
+(
+    SELECT a.process_id, a.process_cmd_id, ARRAY_UNIQUE_AGG(TRIM(NULLIF(b.value,'NONE'))) parent_process_cmd_id
+      FROM process_cmd a,
+      LATERAL split_to_table(a.parent_process_cmd_id,'|') b,
+           process p
+     WHERE a.process_id = p.process_id
+  {% if parameters.process_name != "ALL" %}
+      AND p.process_name = '{{ parameters.process_name }}'
+  {% endif %}
+  {% if parameters.process_cmd_id > 0 %}
+      AND a.process_cmd_id = {{ parameters.process_cmd_id }}
+  {% endif %}
+    GROUP BY a.process_id, a.process_cmd_id
 )
 SELECT p.process_id,
        p.process_name,
        p.process_description,
+       p.run_steps_in_parallel, 
        NVL(p.active,'N') AS process_active,
        c.process_cmd_id,
+       NVL(fpci.parent_process_cmd_id,[]) AS parent_process_cmd_id,
        c.cmd_type,
        CASE 
          WHEN c.cmd_type != 'COPY_INTO_TABLE' 
@@ -41,11 +66,17 @@ SELECT p.process_id,
        c.copy_auto_mapping,
        c.copy_into_force,
        NVL(c.active,'N') AS active,
-       NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars
-  FROM tips_md_schema.process P
+       NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars,
+       c.warehouse_size
+  FROM tips_md_schema.process p
   LEFT JOIN tips_md_schema.process_cmd c ON p.process_id = c.process_id
   LEFT JOIN flatten_cmd_binds fcb ON p.process_id = fcb.process_id
+  LEFT JOIN flatten_parent_cmd_ids fpci ON c.process_id = fpci.process_id AND c.process_cmd_id = fpci.process_cmd_id
+  WHERE 1 = 1
   {% if parameters.process_name != "ALL" %}
-  WHERE p.process_name = '{{ parameters.process_name }}'
+  AND p.process_name = '{{ parameters.process_name }}'
+  {% endif %}
+  {% if parameters.process_cmd_id > 0 %}
+  AND c.process_cmd_id = {{ parameters.process_cmd_id }}
   {% endif %}
  ORDER BY p.process_id, c.process_cmd_id

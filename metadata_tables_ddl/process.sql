@@ -1,6 +1,7 @@
-create or replace TABLE PROCESS (
-	PROCESS_ID NUMBER(38,0) NOT NULL autoincrement,
-	PROCESS_NAME VARCHAR(100) NOT NULL,
-	PROCESS_DESCRIPTION VARCHAR(16777216),
-	ACTIVE VARCHAR(1) DEFAULT 'Y'
+CREATE OR REPLACE TABLE process (
+    process_id              NUMBER NOT NULL AUTOINCREMENT,
+    process_name            VARCHAR(100) NOT NULL,
+    process_description     VARCHAR,
+    run_steps_in_parallel   BOOLEAN DEFAULT TRUE,
+    active                  VARCHAR(1) DEFAULT 'Y'
 );

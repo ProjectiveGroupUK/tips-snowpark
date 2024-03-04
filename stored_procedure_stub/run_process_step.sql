@@ -1,4 +1,4 @@
- CREATE OR REPLACE PROCEDURE run_process(process_name STRING, vars STRING, execute_flag STRING)
+ CREATE OR REPLACE PROCEDURE run_process_step(process_name STRING, process_cmd_id INTEGER, vars STRING, execute_flag STRING, run_id STRING)
   RETURNS VARIANT
   LANGUAGE PYTHON
 --   RUNTIME_VERSION = '3.8'
@@ -6,4 +6,4 @@
   RUNTIME_VERSION = '3.10'
   PACKAGES = ('snowflake-snowpark-python==1.5.1','Jinja2==3.1.2', 'colorama==0.4.6')
   IMPORTS = ('@tips/tips.zip')
-  HANDLER = 'tips.framework.app.run';
+  HANDLER = 'tips.framework.app.runProcessStep';
