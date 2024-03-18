@@ -11,8 +11,8 @@ SELECT dq.process_dq_test_id,
        dq_tgt.accepted_values,       
        dq_tgt.query_binds,       
        DECODE(dq_tgt.active,TRUE,'Y','N') AS active
-  FROM tips_md_schema.process_dq_test dq
-  LEFT JOIN tips_md_schema.process_cmd_tgt_dq_test dq_tgt
+  FROM services.process_dq_test dq
+  LEFT JOIN services.process_cmd_tgt_dq_test dq_tgt
     ON (dq.process_dq_test_name = dq_tgt.process_dq_test_name)
   {% if parameters.dq_test_name != "ALL" %}
   WHERE dq.process_dq_test_name = '{{ parameters.dq_test_name }}'

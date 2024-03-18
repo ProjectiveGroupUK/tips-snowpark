@@ -112,7 +112,7 @@ class App:
                 # Now insert process run log to database
                 processEndTime = datetime.now()
                 results = self._session.sql(
-                    "SELECT TIPS_MD_SCHEMA.PROCESS_LOG_SEQ.NEXTVAL AS SEQVAL"
+                    "SELECT SERVICES.PROCESS_LOG_SEQ.NEXTVAL AS SEQVAL"
                 ).collect()
                 seqVal = results[0]["SEQVAL"]
 
@@ -125,7 +125,7 @@ class App:
                 )
 
                 sqlCommand = f"""
-    INSERT INTO tips_md_schema.process_log (process_log_id, process_name, process_start_time, process_end_time, process_elapsed_time_in_seconds, execute_flag, status, error_message, log_json)
+    INSERT INTO services.process_log (process_log_id, process_name, process_start_time, process_end_time, process_elapsed_time_in_seconds, execute_flag, status, error_message, log_json)
     SELECT {seqVal}, '{self._processName}','{processStartTime}','{processEndTime}',{round((processEndTime - processStartTime).total_seconds(),2)},'{self._executeFlag}','{runFramework["status"]}','{runFramework["error_message"]}',PARSE_JSON('{logJsonString}')
                 """
                 # logger.info(sqlCommand)
@@ -136,7 +136,7 @@ class App:
                     for dqTestLog in dqTestLogs:
                         if len(dqTestLog) > 0 and dqTestLog != {}:
                             sqlCommand = f"""
-        INSERT INTO tips_md_schema.process_dq_log (
+        INSERT INTO services.process_dq_log (
             process_log_id
         , tgt_name
         , attribute_name

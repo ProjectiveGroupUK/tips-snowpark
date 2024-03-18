@@ -9,7 +9,7 @@ create or replace TABLE PROCESS_DQ_TEST (
 	primary key (PROCESS_DQ_TEST_ID)
 );
 
-MERGE INTO tips_md_schema.process_dq_test a
+MERGE INTO services.process_dq_test a
 USING (
   SELECT 'UNIQUE' process_dq_test_name
        , 'Check Uniqueness of a column in the table' process_dq_test_description

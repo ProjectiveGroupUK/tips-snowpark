@@ -6,8 +6,8 @@ split_tgt AS
          TRIM(b.value) cmd_tgt, 
          b.seq AS cmd_tgt_seq,
          b.index AS cmd_tgt_index
-    FROM tips_md_schema.process p,
-         tips_md_schema.process_cmd a,
+    FROM services.process p,
+         services.process_cmd a,
          LATERAL SPLIT_TO_TABLE(a.cmd_tgt, '|') b
    WHERE p.process_id = a.process_id
      AND p.process_name = '{{ parameters.process_name }}'
@@ -26,9 +26,9 @@ SELECT a.process_id,
        b.error_and_abort,
        c.process_dq_test_error_message
   FROM split_tgt a 
-  JOIN tips_md_schema.process_cmd_tgt_dq_test b
+  JOIN services.process_cmd_tgt_dq_test b
     ON (a.cmd_tgt = b.tgt_name)
-  JOIN tips_md_schema.process_dq_test c
+  JOIN services.process_dq_test c
     ON (b.process_dq_test_name = c.process_dq_test_name)
  WHERE b.active = TRUE
  ORDER BY a.process_id, 
