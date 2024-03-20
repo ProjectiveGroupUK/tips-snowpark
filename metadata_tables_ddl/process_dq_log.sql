@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS process_dq_log (
     process_dq_log_id           NUMBER(38,0) NOT NULL AUTOINCREMENT,
-    run_id                      VARCHAR NOT NULL,
     process_log_id              NUMBER(38,0) NOT NULL,
     tgt_name                    VARCHAR(100) NOT NULL,
     attribute_name              VARCHAR(100),
@@ -13,3 +12,5 @@ CREATE TABLE IF NOT EXISTS process_dq_log (
     status                      VARCHAR(100) NOT NULL,
     status_message              VARCHAR
 );
+
+ALTER TABLE IF EXISTS process_dq_log ADD COLUMN IF NOT EXISTS run_id VARCHAR;

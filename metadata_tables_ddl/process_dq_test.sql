@@ -1,4 +1,4 @@
-CREATE OR REPLACE TABLE process_dq_test (
+CREATE TABLE IF NOT EXISTS process_dq_test (
 	process_dq_test_id                 NUMBER(38,0) NOT NULL AUTOINCREMENT,
 	process_dq_test_name               VARCHAR(100) NOT NULL,
 	process_dq_test_description        VARCHAR,

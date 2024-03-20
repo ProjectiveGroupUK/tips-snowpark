@@ -1,5 +1,4 @@
 CREATE TABLE IF NOT EXISTS process_log (
-    run_id                              VARCHAR NOT NULL,
     process_log_id                      NUMBER(38,0) NOT NULL PRIMARY KEY DEFAULT PROCESS_LOG_SEQ.NEXTVAL,
     process_name                        VARCHAR(100) NOT NULL,
     process_log_created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
@@ -11,3 +10,5 @@ CREATE TABLE IF NOT EXISTS process_log (
     error_message                       VARCHAR,
     log_json                            VARIANT NOT NULL
 );
+
+ALTER TABLE IF EXISTS process_log ADD COLUMN IF NOT EXISTS run_id VARCHAR;
