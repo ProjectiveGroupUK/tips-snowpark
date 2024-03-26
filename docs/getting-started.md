@@ -104,9 +104,16 @@ Now navigate to test folder, if you are not already in it.
 cd /c/GitHub/tips-snowpark/test
 ```
 
-And then to execute the trial pipeline that we have setup in previous steps, you can execute the command below:
+And then to execute the trial pipeline that we have setup in previous steps, you can execute one of the commands below:
+
+***Serial Execution* (Step executed serially following topolical sorting):**
 ```
 python run_process_local.py -p TIPS_TEST_PIPELINE -v "{'COBID':'20230101', 'MARKET_SEGMENT':'FURNITURE'}" -e Y
+```
+
+***Parallel Execution* (Step executed parallely utilising Snowflake Tasks):**
+```
+python run_process_with_tasks_local.py -p TIPS_TEST_PIPELINE -v "{'COBID':'20230101', 'MARKET_SEGMENT':'FURNITURE'}" -e Y
 ```
 
 With parameters:
@@ -117,6 +124,8 @@ With parameters:
 
 Once the above command is executed and if everything has been setup correctly, you should start seeing the log messages on terminal window displaying how execution of pipeline is progressing. You should also notice a `log` folder created inside `test` folder, where log files are generated.
 
+***<u>Please Note**</u>: Parallel execution relies on parent_process_cmd_id column setting in PROCESS_CMD table. Further details about this column can be checked in [Reference Guide](reference.md)*
+
 ### Execute Data Pipeline (inside Snowflake with Stored Procedure)
 So, if you have reached this step, presumably everything with setting things up, has worked as expected. This step is needed, if you want to run the data pipelines from inside the database, executing via stored procedure. The advantage of running it with Stored procedure are:
 
@@ -126,20 +135,31 @@ So, if you have reached this step, presumably everything with setting things up,
 
 Before we compile the stored procedure, we would need to upload TiPS core code to Snowflake internal stage, that we created in step [above](#setup-database-objects).
 
-#### Zip TiPS code and uploade to stage
+#### Package TiPS code as a zip file and upload to a stage
 There is a "tips" folder inside the repository. Bundle this folder with its content to a zip file (preferably named as `tips.zip`). If you are on windows, you can easily do that from file explorer, by navigating to repository folder and then right click on **tips** folder and select "compress to zip file" option (or "send to compressed file" on previous versions of windows). This should produce `tips.zip` file inside your repository folder.
 
-#### Compile RUN_PROCESS_SP stored procedure
-To setup stored procedure, please execute the script `run_process_sp.sql` available inside stored_procedure_stub folder.
+#### Compile RUN_PROCESS stored procedure
+RUN_PROCESS stored procedure is used to execute data pipelines in serial mode. To create this stored procedure, please execute the script `run_process.sql`, which is available inside stored_procedure_stub folder.
 
-#### Execute RUN_PROCESS_SP stored procedure
-Now that your stored procedure is compiled in the database, you can execute TiPS from within Snowflake like any other stored procedure. For example, to run the sample pipeline, if you have set it up, run the following command from Snowflake IDE:
+#### Compile RUN_PROCESS_WITH_TASKS stored procedure
+RUN_PROCESS_WITH_TASKS stored procedure is used to execute data pipelines in parallel mode. To create this stored procedure, please execute the script `run_process_with_tasks.sql`, which is also available inside stored_procedure_stub folder.
 
+#### Execute Data Pipeline
+Now that stored procedures are compiled in the database, you can execute data pipelines with TiPS directly inside from Snowflake like any other stored procedure. For example, to run the sample pipeline, you can run one of the following commands from within Snowflake IDE:
+
+***Serial Execution* (Step executed serially following topolical sorting):**
 ```
-call run_process_sp(process_name=>'TIPS_TEST_PIPELINE', vars=>'{"COBID":"20230101", "MARKET_SEGMENT":"FURNITURE"}', execute_flag=>'Y')
+call run_process(process_name=>'TIPS_TEST_PIPELINE', vars=>'{"COBID":"20230101", "MARKET_SEGMENT":"FURNITURE"}', execute_flag=>'Y')
 ```
 
-Above command example is passing parameter values in named parameter way, but you can just pass in values in positional way, without explicitly specifying parameter name. Also, `var` parameter value is needed in JSON format where bind variables are used in the pipeline. If bind variables are not used, just pass in `NULL` instead.
+***Parallel Execution* (Step executed parallely utilising Snowflake Tasks):**
+```
+call run_process_with_tasks(process_name=>'TIPS_TEST_PIPELINE', vars=>'{"COBID":"20230101", "MARKET_SEGMENT":"FURNITURE"}', execute_flag=>'Y')
+```
+
+***<u>Please Note**</u>: Parallel execution relies on parent_process_cmd_id column setting in PROCESS_CMD table. Further details about this column can be checked in [Reference Guide](reference.md)*
+
+In both the commands above, parameter values are passed in named-parameter way, but you can just pass in values in positional way, without explicitly specifying parameter name. Also, `var` parameter value is needed in JSON format where bind variables are used in the pipeline. If bind variables are not used, just pass in `NULL` instead.
 
 All Done! You are now set to start using TiPS in its full swing. Please do checkout [TiPS Conventions](tips_conventions.md) and [Reference Guide](reference.md) for further useful information.
 

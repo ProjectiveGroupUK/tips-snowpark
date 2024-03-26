@@ -119,6 +119,7 @@ class App:
 
                 frameworkRunner: FrameworkRunner = FrameworkRunner(
                     processName=self._processName,
+                    runID = self._runID,
                     bindVariables=self._bindVariables,
                     executeFlag=self._executeFlag,
                 )
@@ -276,7 +277,6 @@ AS
                     if ret["STATUS"] == "ERROR":
                         raise ValueError(ret["ERROR_MESSAGE"])
                 
-                taskCounter += 1
                 taskDict["start"] = rootTaskName
 
                 # Loop through the metadata and setup tasks
