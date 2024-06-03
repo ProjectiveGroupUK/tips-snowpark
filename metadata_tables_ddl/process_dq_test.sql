@@ -1,12 +1,12 @@
-create or replace TABLE PROCESS_DQ_TEST (
-	PROCESS_DQ_TEST_ID NUMBER(38,0) NOT NULL autoincrement,
-	PROCESS_DQ_TEST_NAME VARCHAR(100) NOT NULL,
-	PROCESS_DQ_TEST_DESCRIPTION VARCHAR(16777216),
-	PROCESS_DQ_TEST_QUERY_TEMPLATE VARCHAR(16777216) NOT NULL,
-	PROCESS_DQ_TEST_ERROR_MESSAGE VARCHAR(16777216) NOT NULL,
-	ACTIVE BOOLEAN NOT NULL DEFAULT TRUE,
-	unique (PROCESS_DQ_TEST_NAME),
-	primary key (PROCESS_DQ_TEST_ID)
+CREATE TABLE IF NOT EXISTS process_dq_test (
+	process_dq_test_id                 NUMBER(38,0) NOT NULL AUTOINCREMENT,
+	process_dq_test_name               VARCHAR(100) NOT NULL,
+	process_dq_test_description        VARCHAR,
+	process_dq_test_query_template     VARCHAR NOT NULL,
+	process_dq_test_error_message      VARCHAR NOT NULL,
+	active                             BOOLEAN NOT NULL DEFAULT TRUE,
+	UNIQUE (process_dq_test_name),
+	PRIMARY KEY (process_dq_test_id)
 );
 
 MERGE INTO services.process_dq_test a

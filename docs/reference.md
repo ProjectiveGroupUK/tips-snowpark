@@ -28,14 +28,16 @@ This is the table where you populate information about each step in a data pipel
 | GENERATE_MERGE_MATCHED_CLAUSE | This is only applicable for MERGE command type. Here you specify whether ON MATCHED CLAUSE is to be generated in generated MERGE DML. Accepted values are Y/N. When Y is selected, ON MATCHED CLAUSE is generated which runs an UPDATE operation |
 | GENERATE_MERGE_NON_MATCHED_CLAUSE | This is only applicable for MERGE command type. Here you specify whether ON NOT MATCHED CLAUSE is to be generated in generated MERGE DML. Accepted values are Y/N. When Y is selected, ON NOT MATCHED CLAUSE is generated which runs an INSERT operation|
 | ADDITIONAL_FIELDS | This is where you specify any additional columns/fields to be added to generated SELECT clause from source, which is not available in source. <p>E.g.</p><p>TO_NUMBER(:1) COBID</p><p>would add a column to generated SELECT statement, where it is transforming bind variable value passed in at run time, and aliased as COBID, which would then become part of INSERT/MERGE statement</p> |
-| COPY_AUTO_MAPPING | Only applicable for COPY_INTO_TABLE command type with CSV source files. <p>Acceptable values - Y/N/NULL</p> <p>When set to 'Y', only fields that exist in both the source and target will be loaded. Source file must have a header. This option can be used to reorder fields from source file to target table or omit fields from the source.</p>|
-| COPY_INTO_FORCE | Only applicable for COPY_INTO_TABLE command type. <p>Acceptable values - Y/N/NULL</p><p>When set to 'Y', this option will include the FORCE = TRUE option on COPY INTO commands. Data is loaded regardless of whether source file is unchanged or data already exists in target table. Can produce duplicate data in target table </p>|
 | TEMP_TABLE | Acceptable values - Y/N/NULL <p>When set to Y, this would trigger creating a temporary table with the same name as target in the same schema as target before the operation of the step is run.</p><p>This feature utilises special functionality that has been introduced in Snowflake, that you can have permanent (or transient) table and a temporary table with the same name and temporary table is then given priority in the current running session.</p><p>In TiPS we utilise this functionality where a data pipeline can be run concurrently withing multiple sessions with its own bind variables and dataset are consistently transformed and published at session level |
 | CMD_PIVOT_BY | This is only applicable for COPY_INTO_FILE command type. If you are looking to apply a PIVOT in the SQL query in the COPY INTO statement, then this can be used. This field will dictate which column's values are to be pivoted e.g., REPORTING_CCY |
 | CMD_PIVOT_FIELD | This is only applicable for COPY_INTO_FILE command type. If you are looking to apply a PIVOT in the SQL query in the COPY INTO statement, then this can be used. This field will be the aggregation of the field for the values which are included in the pivot e.g., SUM(REPORTING_CURRENCY) |
 | ACTIVE | Active (Y) / Inactive (N) flag.<p> When set to N (inactive), data pipeline step can be disabled and TiPS will skip that step while execute the pipeline |
 | FILE_FORMAT_NAME | This option is applicable to COPY_INTO_FILE and COPY_INTO_TABLE command types. <p>If a file format has been defined in the database, that can be used. <br>**Please include schema name with file format name e.g. [SCHEMA NAME].[FILE FORMAT NAME] and all in CAPS please**</p> |
 | COPY_INTO_FILE_PARITITION_BY | This option is applicable to COPY_INTO_FILE command type. This adds PARTITION BY clause in generated COPY INTO FILE command. COPY_INTO_FILE_PARITITION_BY field needs to be an SQL expression that outputs a string. The dataset specified by CMD_SRC will then be split into individual files based on the output of the expression. A directory will be created in the stage specified by CMD_TGT which will be named the same as the partition clause. The data will then be output into this location in the stage. |
+| COPY_AUTO_MAPPING | Only applicable for COPY_INTO_TABLE command type with CSV source files. <p>Acceptable values - Y/N/NULL</p> <p>When set to 'Y', only fields that exist in both the source and target will be loaded. Source file must have a header. This option can be used to reorder fields from source file to target table or omit fields from the source.</p>|
+| COPY_INTO_FORCE | Only applicable for COPY_INTO_TABLE command type. <p>Acceptable values - Y/N/NULL</p><p>When set to 'Y', this option will include the FORCE = TRUE option on COPY INTO commands. Data is loaded regardless of whether source file is unchanged or data already exists in target table. Can produce duplicate data in target table </p>|
+| PARENT_PROCESS_CMD_ID | This is populated with PROCESS_CMD_ID of preceeding step. Where current step has multiple predecessors, pipe delimited PROCESS_CMD_ID should be entered. For steps with no preceding steps, "NONE" should be used as a DEFAULT value.|
+| WAREHOUSE_SIZE | If a step requires a different warehouse size to run instead of the default one used to execute the process, then the warehouse size (t-shirt sizes) can be specified here. Expected value are NULL, "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL". At run time, this value is replaced with part of string following the last underscore in default warehouse name (used to execute the process). <p>*This setting is only applicable when running process in parallel mode.*</p>|
 
 ### PROCESS_LOG
 This table holds logging information about each run of TiPS. This table is populated automatically at the end of execution of TiPS
@@ -52,6 +54,7 @@ This table holds logging information about each run of TiPS. This table is popul
 | STATUS | Status of Data Pipeline Execution |
 | ERROR_MESSAGE | If any steps errored, top level error message is populated here |
 | LOG_JSON | Complete Log information of Data Pipeline in JSON format. View `VW_PROCESS_LOG` displays flattened information of this column |
+| RUN_ID | Internal ID generated at process level. When process is execute in parallel mode, each step creates a record in PROCESS_LOG with a different PROCESS_LOG_ID, but maintaining the same RUN_ID|
 
 ### PROCESS_DQ_TEST
 This table is populated with data relating to Data Quality Tests. This table is shipped with some standard DQ Test definitions.
@@ -75,9 +78,9 @@ This is the table that you populate with the information to enforce a predefined
 | TGT_NAME | Specify the name of target on which Data Quality Test is to be run. <p>This is usually a table. <br>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please.**</p><p>This should match target name defined on `PROCESS_CMD` table |
 | ATTRIBUTE_NAME | Enter column name on which Data Quality Test is to be run |
 | ACCEPTED_VALUES | For "Accepted Values" test, this should contain comma separated values that are acceptable in the target.<p>E.g.</p><p>`'AFRICA','MIDDLE EAST','EUROPE','AMERICA'`</p> |
-| QUERY_BINDS | Here you can enter any arbitriary bind values that you want to be used in query template. Multiple values can be entered delimited by pipe. Bind variable defined in [PROCESS_DQ_TEST_QUERY_TEMPLATE in PROCESS_DQ_TEST](#process_dq_test) are replaced by these values in the sequence of order (starting from :1) at runtime |
 | ERROR_AND_ABORT | TRUE/FALSE, indicating whether the process (data pipeline) should produce error and abort execution when this data quality test fails. When FALSE, process would just log warning and process would continue |
 | ACTIVE | TRUE/FALSE<p> When FALSE, data quality test would not run |
+| QUERY_BINDS | Here you can enter any arbitriary bind values that you want to be used in query template. Multiple values can be entered delimited by pipe. Bind variable defined in [PROCESS_DQ_TEST_QUERY_TEMPLATE in PROCESS_DQ_TEST](#process_dq_test) are replaced by these values in the sequence of order (starting from :1) at runtime |
 
 ### PROCESS_DQ_LOG
 This table holds logging information about each Data Quality test expected withing a data pipeline when TiPS is run. This log is also associated to data in `PROCESS_LOG` table.
@@ -96,6 +99,7 @@ This table holds logging information about each Data Quality test expected withi
 | ELAPSED_TIME_IN_SECONDS | Total time (in seconds) taken in execution of DQ Test Query |
 | STATUS | Status [PASSED or ERROR or WARNING] of DQ Test |
 | STATUS_MESSAGE | Warning or Error Message returned |
+| RUN_ID | Internal ID generated at process level. When process is execute in parallel mode, each step creates a record in PROCESS_LOG with a different PROCESS_LOG_ID, but maintaining the same RUN_ID|
 
 ## Command Types
 ### APPEND

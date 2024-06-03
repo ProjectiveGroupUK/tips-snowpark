@@ -1,7 +1,7 @@
 """
-This script is to test the app through snowpark client running via python stored procedure in snowflake
+This script is to test the app through snowpark client running locally (not through stored procedure)
 Example command to run this script
-python run_process_sp.py -p TIPS_TEST_PIPELINE -v "{'MARKET_SEGMENT':'FURNITURE', 'COBID':'20230401'}" -e N
+python run_process_local.py -p TIPS_TEST_PIPELINE -v "{'MARKET_SEGMENT':'FURNITURE', 'COBID':'20230127'}" -e N
 
 It expects environment variables set for credentials. This can be achieved by creating .env file with following structure
 SF_ACCOUNT=<<snowflake account>>
@@ -18,31 +18,19 @@ import os
 from snowflake.snowpark import Session
 from dotenv import load_dotenv
 import argparse
-import logging
+from tips.framework.app import runProcessStepLocal as app_run
 from tips.utils.logger import Logger
 
 logger = Logger().initialize()
-
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-# ch = logging.StreamHandler()
-# ch.setLevel(logging.DEBUG)
-# logger.addHandler(ch)
-
-# for logger_name in ('snowflake.snowpark', 'snowflake.connector', 'tips.framework.logger'): 
-#     logger = logging.getLogger(__name__)
-#     logger.setLevel(logging.INFO)
-#     ch = logging.StreamHandler()
-#     ch.setLevel(logging.INFO)
-#     ch.setFormatter(logging.Formatter('%(asctime)s - %(threadName)s %(filename)s:%(lineno)d - %(funcName)s() - %(levelname)s - %(message)s'))
-#     logger.addHandler(ch)
-
+# for logger_name in ('snowflake.snowpark', 'snowflake.connector'):
+# logger = logging.getLogger('tips.framework.logger')
+# logger.setLevel(logging.INFO)
 
 load_dotenv()
 
 parser = argparse.ArgumentParser(
-    usage="python app.py -p Process Name -v Variables in Dictionary Format -e Execute?(Y/N)",
-    description="""E.g.: python app.py -p PUBLISH_CUSTOMER -v "{'MARKET_SEGMENT':'FURNITURE', 'COBID':'20210401'}" -e N""",
+    usage="python app.py -p Process Name -c Process Command ID -v Variables in Dictionary Format -e Execute?(Y/N)",
+    description="""E.g.: python run_process_step_local.py -p TIPS_TEST_PIPELINE -c 10 -v "{'MARKET_SEGMENT':'FURNITURE', 'COBID':'20230401'}" -e N""",
 )
 
 parser.add_argument(
@@ -53,6 +41,16 @@ parser.add_argument(
     required=True,
     help="Process Name to run",
 )
+
+parser.add_argument(
+    "-c",
+    "--command-id",
+    metavar="Process Command ID",
+    dest="PROCESS_CMD_ID",
+    required=True,
+    help="Process Command ID of Step to run",
+)
+
 parser.add_argument(
     "-v",
     "--var",
@@ -73,6 +71,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 v_process_name = args.PROCESS_NAME.upper()
+v_process_cmd_id = int(args.PROCESS_CMD_ID)
 
 v_vars = args.VARS
 if v_vars is not None:
@@ -85,19 +84,25 @@ if v_vars is not None:
 v_exec = args.EXEC.upper()
 
 connection_parameters = {
-    "account": os.getenv('SF_ACCOUNT'),
-    "user": os.getenv('SF_USER'),
-    "password": os.getenv('SF_PASSWORD'),
-    "role": os.getenv('SF_ROLE'),
-    "warehouse": os.getenv('SF_WAREHOUSE'),
-    "database": os.getenv('SF_DATABASE'),
-    "schema": os.getenv('SF_SCHEMA')
+    "account": os.getenv("SF_ACCOUNT"),
+    "user": os.getenv("SF_USER"),
+    "password": os.getenv("SF_PASSWORD"),
+    "role": os.getenv("SF_ROLE"),
+    "warehouse": os.getenv("SF_WAREHOUSE"),
+    "database": os.getenv("SF_DATABASE"),
+    "schema": os.getenv("SF_SCHEMA"),
 }
 
 session = Session.builder.configs(connection_parameters).create()
 
-response = session.sql(f"call run_process_sp('{v_process_name}','{v_vars}', '{v_exec}')").collect()
-
-logger.info('RUN_PROCESS_SP completed!!')
-
+response = app_run(
+    session=session,
+    process_name=v_process_name,
+    process_cmd_id=v_process_cmd_id,
+    vars=v_vars,
+    execute_flag=v_exec,
+    addLogFileHandler=True,
+)
+# response = app_run(session=session, process_name=v_process_name, vars=v_vars, execute_flag=v_exec)
+logger.info("RUN_PROCESS_STEP_LOCAL finished!!")
 session.close()

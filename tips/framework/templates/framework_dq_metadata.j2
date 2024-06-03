@@ -11,13 +11,16 @@ split_tgt AS
          LATERAL SPLIT_TO_TABLE(a.cmd_tgt, '|') b
    WHERE p.process_id = a.process_id
      AND p.process_name = '{{ parameters.process_name }}'
+{% if parameters.process_cmd_id > 0 %}
+     AND a.process_cmd_id = {{ parameters.process_cmd_id }}
+{% endif %}
      AND a.cmd_type = 'DQ_TEST'
      AND a.active = 'Y'
 )
 SELECT a.process_id, 
        a.process_cmd_id, 
        b.process_cmd_tgt_dq_test_id, 
-       b.tgt_name, 
+       UPPER('{{ parameters.target_database }}'||'.'||b.tgt_name) tgt_name, 
        b.attribute_name, 
        c.process_dq_test_name,
        c.process_dq_test_query_template,
