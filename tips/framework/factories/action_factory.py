@@ -14,7 +14,7 @@ from tips.framework.actions.truncate_action import TruncateAction
 from tips.framework.actions.dq_test_action import DQTestAction
 from tips.framework.metadata.action_metadata import ActionMetadata
 from tips.framework.metadata.table_metadata import TableMetaData
-
+from tips.framework.actions.call_procedure_action import CallProcedureAction
 
 # Below is to initialise logging
 import logging
@@ -174,6 +174,13 @@ class ActionFactory:
                 cmdDQTests=actionMetaData.getCmdDQTests(),
                 whereClause=actionMetaData.getWhereClause(),
                 binds=actionMetaData.getBinds(),
+            )
+        elif actionMetaData.getCmdType() == "PROC":
+            logger.info('Running Call Procedure Action...')
+            action = CallProcedureAction(
+                target=actionMetaData.getTarget(),
+                whereClause=actionMetaData.getWhereClause(),
+                binds=actionMetaData.getBinds()
             )
         else:
             logger.info("Running Default Action...")
