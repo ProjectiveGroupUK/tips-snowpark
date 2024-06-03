@@ -224,3 +224,17 @@ Following are the fields applicable for TRUNCATE command type:
 | Field Name | Mandatory? | Description |
 | ---------- | :-------: |-------------|
 | CMD_TGT | Yes | Specify the name of table from which data is to be deleted. <p>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+
+
+### PROC
+This command type is for running 'call <proc>(<args>)' commands.
+
+The following fields are applicable for the PROC command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | Specify the name of the procedure here. <p>Provide the name without arguments. e.g. schema1.proc1 instead of schema1.proc1(varchar) <br>**Please include schema name with the procedure name e.g. [SCHEMA NAME].[PROCEDURE NAME] and all in CAPS please**</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimited by Pipe **"\|"** symbol. In this case, CMD_BINDS can be passed to the procedure if referenced in CMD_WHERE.  <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpreted as keys from the variable values JSON object passed in at run-time</p> |
+| CMD_WHERE | No | This is where you supply the arguments used by the procedure. </p>Provide the parametes in a comma delimited list, and reference CMD_BINDS using :<cmd_bind>. e.g. For a procedure with three parameters, PARAM, PARAM2, and PARAM3, and the first two parameters coming from their respective CMD_BINDS, CMD_WHERE could be: 'PARAM=:1,PARAM2=:2,PARAM3=\'ABCD\''</p> |
+
+**Please note that TIPS is not designed as an orchestrator and that this action should be treated strictly as a convenience action for edge cases.**
