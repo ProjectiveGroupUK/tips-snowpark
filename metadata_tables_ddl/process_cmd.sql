@@ -3,7 +3,7 @@ create or replace TABLE PROCESS_CMD (
     PROCESS_CMD_ID                      NUMBER(38,0) NOT NULL,
     CMD_TYPE                            VARCHAR(30) NOT NULL,
     CMD_SRC                             VARCHAR,
-    CMD_TGT                             VARCHAR NOT NULL,
+    CMD_TGT                             VARCHAR,
     CMD_WHERE                           VARCHAR,
     CMD_BINDS                           VARCHAR,
     REFRESH_TYPE                        VARCHAR(10),

@@ -178,7 +178,7 @@ class ActionFactory:
         elif actionMetaData.getCmdType() == "PROC":
             logger.info('Running Call Procedure Action...')
             action = CallProcedureAction(
-                target=actionMetaData.getTarget(),
+                source=actionMetaData.getSource(),
                 whereClause=actionMetaData.getWhereClause(),
                 binds=actionMetaData.getBinds()
             )

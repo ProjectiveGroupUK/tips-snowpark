@@ -11,18 +11,18 @@ from tips.framework.utils.globals import Globals
 
 
 class CallProcedureAction(SqlAction):
-    _target: str
+    _source: str
     _whereClause: str
     _metadata: TableMetaData
     _binds: List[str]
 
     def __init__(
         self,
-        target: str,
+        source: str,
         whereClause: str,
         binds: List[str],
     ) -> None:
-        self._target = target
+        self._source = source
         self._whereClause = whereClause
         self._binds = binds
 
@@ -53,7 +53,7 @@ class CallProcedureAction(SqlAction):
         cmdStr = SQLTemplate().getTemplate(
             sqlAction="call_procedure",
             parameters={
-                "target": self._target,
+                "source": self._source,
                 "whereClause": self._whereClause
             },
         )
