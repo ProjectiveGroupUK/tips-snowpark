@@ -6,18 +6,21 @@ split_tgt AS
          TRIM(b.value) cmd_tgt, 
          b.seq AS cmd_tgt_seq,
          b.index AS cmd_tgt_index
-    FROM services.process p,
-         services.process_cmd a,
+    FROM tips_md_schema.process p,
+         tips_md_schema.process_cmd a,
          LATERAL SPLIT_TO_TABLE(a.cmd_tgt, '|') b
    WHERE p.process_id = a.process_id
      AND p.process_name = '{{ parameters.process_name }}'
+{% if parameters.process_cmd_id > 0 %}
+     AND a.process_cmd_id = {{ parameters.process_cmd_id }}
+{% endif %}
      AND a.cmd_type = 'DQ_TEST'
      AND a.active = 'Y'
 )
 SELECT a.process_id, 
        a.process_cmd_id, 
        b.process_cmd_tgt_dq_test_id, 
-       b.tgt_name, 
+       UPPER('{{ parameters.target_database }}'||'.'||b.tgt_name) tgt_name, 
        b.attribute_name, 
        c.process_dq_test_name,
        c.process_dq_test_query_template,
@@ -26,9 +29,9 @@ SELECT a.process_id,
        b.error_and_abort,
        c.process_dq_test_error_message
   FROM split_tgt a 
-  JOIN services.process_cmd_tgt_dq_test b
+  JOIN tips_md_schema.process_cmd_tgt_dq_test b
     ON (a.cmd_tgt = b.tgt_name)
-  JOIN services.process_dq_test c
+  JOIN tips_md_schema.process_dq_test c
     ON (b.process_dq_test_name = c.process_dq_test_name)
  WHERE b.active = TRUE
  ORDER BY a.process_id, 

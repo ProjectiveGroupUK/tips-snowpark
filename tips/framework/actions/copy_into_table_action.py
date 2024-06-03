@@ -127,7 +127,7 @@ class CopyIntoTableAction(SqlAction):
 
                     #inferring fields in source - requires PARSE_HEADER = TRUE, SKIP_HEADER=0
                     currentSessionId = session.sql('SELECT CURRENT_SESSION() AS SESSION_ID').collect()[0]['SESSION_ID']
-                    tempFileFormat = f'{targetDatabase}.SERVICES.format_{currentSessionId}'
+                    tempFileFormat = f'{targetDatabase}.TIPS_MD_FORMAT.format_{currentSessionId}'
                     #either use clone of given file format or create
                     if self._fileFormatName != None:
                         createTempFormat = f'CREATE OR REPLACE FILE FORMAT {tempFileFormat} CLONE {self._fileFormatName}'

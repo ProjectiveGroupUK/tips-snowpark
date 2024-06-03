@@ -9,5 +9,3 @@ $$
     var success_message = "Table " + TARGET_TABLE_NAME.toUpperCase() + " successfully created.";
     return success_message;
 $$;
-
-GRANT OWNERSHIP ON PROCEDURE CREATE_TEMPORARY_TABLE(VARCHAR,VARCHAR) TO DATABASE ROLE DB_CREATE COPY CURRENT GRANTS;

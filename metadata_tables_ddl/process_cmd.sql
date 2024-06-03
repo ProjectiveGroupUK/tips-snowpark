@@ -23,3 +23,8 @@ create or replace TABLE PROCESS_CMD (
     COPY_INTO_FILE_PARITITION_BY        VARCHAR,
     ACTIVE                              VARCHAR(1) DEFAULT 'Y'
 );
+
+ALTER TABLE IF EXISTS process_cmd ADD COLUMN IF NOT EXISTS copy_auto_mapping VARCHAR(1);
+ALTER TABLE IF EXISTS process_cmd ADD COLUMN IF NOT EXISTS copy_into_force VARCHAR(1);
+ALTER TABLE IF EXISTS process_cmd ADD COLUMN IF NOT EXISTS parent_process_cmd_id VARCHAR NOT NULL DEFAULT 'NONE';
+ALTER TABLE IF EXISTS process_cmd ADD COLUMN IF NOT EXISTS warehouse_size VARCHAR;

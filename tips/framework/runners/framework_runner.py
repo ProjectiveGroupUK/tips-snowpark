@@ -13,6 +13,7 @@ from tips.framework.utils.globals import Globals
 
 class FrameworkRunner:
     _processName: str
+    _runID: str
     _bindVariables: Dict
     _executeFlag: str
     _globalsInstance: Globals
@@ -20,8 +21,9 @@ class FrameworkRunner:
     returnJson: Dict = dict()
     dqTestLogList: List
 
-    def __init__(self, processName: str, bindVariables: Dict, executeFlag: str) -> None:
+    def __init__(self, processName: str, runID: str, bindVariables: Dict, executeFlag: str) -> None:
         self._processName = processName
+        self._runID = runID
         self._bindVariables = bindVariables
         self._executeFlag = executeFlag
         self.returnJson = {
@@ -30,6 +32,7 @@ class FrameworkRunner:
             "warning_message": str(),
             "session_variables": self._bindVariables,
             "process": self._processName,
+            "run_id": self._runID,
             "execute": self._executeFlag,
             "steps": [],
         }
@@ -125,6 +128,14 @@ class FrameworkRunner:
                 isActive = True if fwMetaData["ACTIVE"] == "Y" else False
 
                 if fwMetaData["CMD_TYPE"] == "DQ_TEST":
+                    if len(frameworkDQMetaData) <= 0:
+                        cmdID = fwMetaData["PROCESS_CMD_ID"]
+                        self.returnJson["status"] = "ERROR"
+                        self.returnJson[
+                            "error_message"
+                        ] = f"No DQ Test data retreived for cmd_id {cmdID}. Please check that DQ Metadata has been setup correctly!"
+                        break
+
                     cmdDQTests = frameworkDQMetaData[fwMetaData["PROCESS_CMD_ID"]]
                 else:
                     cmdDQTests = []
