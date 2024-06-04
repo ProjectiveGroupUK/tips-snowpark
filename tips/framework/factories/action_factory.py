@@ -179,7 +179,6 @@ class ActionFactory:
             logger.info('Running Call Procedure Action...')
             action = CallProcedureAction(
                 source=actionMetaData.getSource(),
-                whereClause=actionMetaData.getWhereClause(),
                 binds=actionMetaData.getBinds()
             )
         else:
