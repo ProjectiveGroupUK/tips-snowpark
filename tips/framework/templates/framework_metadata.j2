@@ -1,7 +1,7 @@
 WITH flatten_cmd_binds AS
 (
     SELECT a.process_id, ARRAY_UNIQUE_AGG(TRIM(b.value)) bind_var_list
-      FROM services.process_cmd a,
+      FROM TIPS_MD_SCHEMA.process_cmd a,
       LATERAL split_to_table(a.cmd_binds,'|') b
     GROUP BY a.process_id
 )
@@ -42,8 +42,8 @@ SELECT p.process_id,
        c.copy_into_force,
        NVL(c.active,'N') AS active,
        NVL(fcb.bind_var_list,ARRAY_CONSTRUCT()) AS bind_vars
-  FROM services.process P
-  LEFT JOIN services.process_cmd c ON p.process_id = c.process_id
+  FROM TIPS_MD_SCHEMA.process P
+  LEFT JOIN TIPS_MD_SCHEMA.process_cmd c ON p.process_id = c.process_id
   LEFT JOIN flatten_cmd_binds fcb ON p.process_id = fcb.process_id
   {% if parameters.process_name != "ALL" %}
   WHERE p.process_name = '{{ parameters.process_name }}'
