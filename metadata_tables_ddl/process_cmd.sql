@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS process_cmd (
     process_cmd_id                      NUMBER(38,0) NOT NULL,
     cmd_type                            VARCHAR(30) NOT NULL,
     cmd_src                             VARCHAR,
-    cmd_tgt                             VARCHAR NOT NULL,
+    cmd_tgt                             VARCHAR,
     cmd_where                           VARCHAR,
     cmd_binds                           VARCHAR,
     refresh_type                        VARCHAR(10),
