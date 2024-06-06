@@ -224,3 +224,14 @@ Following are the fields applicable for TRUNCATE command type:
 | Field Name | Mandatory? | Description |
 | ---------- | :-------: |-------------|
 | CMD_TGT | Yes | Specify the name of table from which data is to be deleted. <p>**Please include schema name with the object name e.g. [SCHEMA NAME].[OBJECT NAME] and all in CAPS please**</p> |
+
+
+### PROC
+This command type is for running 'call <proc>(<args>)' commands.
+
+The following fields are applicable for the PROC command type:
+
+| Field Name | Mandatory? | Description |
+| ---------- | :-------: |-------------|
+| CMD_SRC | Yes | Specify the name of the procedure here, referencing cmd_binds in the arguments if required. <p> e.g. SCHEMA1.PROC1(PARAM1 => \\':1\\', PARAM2 => :2)  <br>**Please include schema name with the procedure name e.g. [SCHEMA NAME].[PROCEDURE NAME] and all in CAPS please**</p> |
+| CMD_BINDS | No | If bind variables are used in the step, here you specify the name for bind variables, delimited by Pipe **"\|"** symbol. In this case, CMD_BINDS can be passed to the procedure if referenced in CMD_SRC.  <p>Bind variable values are passed in at runtime in a JSON format. Names of bind variables defined here are interpreted as keys from the variable values JSON object passed in at run-time</p> |
