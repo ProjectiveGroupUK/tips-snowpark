@@ -1,0 +1,882 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../tips_conventions/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.25">
+    
+    
+      
+        <title>Getting Started - TiPS (Snowpark) Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="TiPS (Snowpark) Documentation" class="md-header__button md-logo" aria-label="TiPS (Snowpark) Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            TiPS (Snowpark) Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ProjectiveGroupUK/tips-snowpark" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ProjectiveGroupUK/tips-snowpark
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="TiPS (Snowpark) Documentation" class="md-nav__button md-logo" aria-label="TiPS (Snowpark) Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    TiPS (Snowpark) Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ProjectiveGroupUK/tips-snowpark" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ProjectiveGroupUK/tips-snowpark
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tips-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      TiPS Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TiPS Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#downloading-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      Downloading Repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-python-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Python Virtual Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-database-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Database Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-sample-data-pipeline-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Sample Data Pipeline [optional]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup Sample Data Pipeline [optional]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequence-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sequence Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-ddl-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table DDL Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      View Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline-using-snowpark-client-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline (using Snowpark Client API)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline-inside-snowflake-with-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline (inside Snowflake with Stored Procedure)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execute Data Pipeline (inside Snowflake with Stored Procedure)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-tips-code-as-a-zip-file-and-upload-to-a-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Package TiPS code as a zip file and upload to a stage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compile-run_process-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compile RUN_PROCESS stored procedure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compile-run_process_with_tasks-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compile RUN_PROCESS_WITH_TASKS stored procedure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tips_conventions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TiPS Conventions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Reference Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tips-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      TiPS Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TiPS Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#downloading-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      Downloading Repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-python-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Python Virtual Environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-database-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Database Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup-sample-data-pipeline-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup Sample Data Pipeline [optional]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup Sample Data Pipeline [optional]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schema Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequence-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sequence Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-ddl-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Table DDL Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      View Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Metadata Script(s)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline-using-snowpark-client-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline (using Snowpark Client API)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline-inside-snowflake-with-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline (inside Snowflake with Stored Procedure)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execute Data Pipeline (inside Snowflake with Stored Procedure)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-tips-code-as-a-zip-file-and-upload-to-a-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Package TiPS code as a zip file and upload to a stage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compile-run_process-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compile RUN_PROCESS stored procedure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compile-run_process_with_tasks-stored-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compile RUN_PROCESS_WITH_TASKS stored procedure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execute-data-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execute Data Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="getting-started">Getting Started</h1>
+<p>Great, now that you have made your mind to give TiPS a try, let's get you started. We are pretty confident that you will find it worth to give it a try. </p>
+<p>Python (3.8 or later) is required to run TiPS using the Snowpark Client API or to test the code before uploading it to Snowflake. See the <a href="https://www.python.org/">Python's official website</a> for installation instructions.</p>
+<h2 id="tips-setup">TiPS Setup</h2>
+<p>Presumably you are currently browsing through the repository on GitHub or perhaps you have already downloaded the repository to your PC. If you haven't yet downloaded the repository, let's get it downloaded first.</p>
+<h3 id="downloading-repository">Downloading Repository</h3>
+<p>TiPS can be downloaded from <a href="https://github.com/ProjectiveGroupUK/tips-snowpark">GitHub repository</a>, either by cloning the repository or downloading as zip file. When on the repository page, click on the "&lt;&gt; Code", as shown in yellow highlighting, in screenshot below:</p>
+<p><img alt="Code Button" src="../images/github_code_button.png" />.</p>
+<p>From here you can either clone the repository to your PC or download the source code as Zip file. </p>
+<p>If you have downloaded the zip file, unzip it into a local folder. Folder name can be as per your choice, however if you create it as <code>c:\GitHub\tips-snowpark</code> (on Windows) or <code>/GitHub/tips-snowpark</code> (on Unix based OS, including Mac), it will make it much easier for you to copy/paste the commands from the instructions.</p>
+<h3 id="create-python-virtual-environment">Create Python Virtual Environment</h3>
+<p>Now that you have got the code on your PC in your desired folder location, open the code in editor of your choice (e.g., VSCode or PyCharm).</p>
+<p>Open the terminal windows from your code editor (which should ideally open the terminal in repository folder)<p>OR</p><p>if you prefer, open command prompt/PowerShell (Windows) or terminal window (Linux/Mac) and navigate to repository folder.</p></p>
+<p>For example:</p>
+<ul>
+<li>Windows - <code>cd C:\GitHub\tips-snowpark\</code></li>
+<li>Linux/Mac - <code>cd /GitHub/tips-snowpark</code></li>
+<li>Bash Terminal - <code>cd /c/GitHub/tips-snowpark/</code></li>
+</ul>
+<p><em>It is preferable to use Bash Terminal on Windows PC, as command examples in the instructions given below are from bash terminal. On Windows PC with Git installed, Git Bash should be present.</em></p>
+<p>Once in the terminal, run the following command to setup python virtual environment:</p>
+
+<p><code>$ python -m venv venv</code> (this would create a folder named venv in your current location)</p>
+<p>Next run command:<br>
+<code>$ source venv/Scripts/active</code> (to activate virtual environment)</p>
+<p>Next run command:<br>
+<code>$ pip install -r requirements.txt</code> (this would install all required dependencies to virtual environment)</p>
+<p>Now your environment is all set, so we can mode to next step.</p>
+<h3 id="setup-database-objects">Setup Database Objects</h3>
+<p>There is a folder named <code>metadata_tables_ddl</code>, which contains SQL scripts for database objects that are part of TiPS. Execute these scripts on Snowflake, in the order they are listed. You can run these in any schema of your choice, but if there is no preference, suggested schema is <code>TIPS_MD_SCHEMA</code> (create schema or use existing one, as deemed fit)</p>
+<ol>
+<li><code>process.sql</code>: This is DDL script for <code>PROCESS</code> table.</li>
+<li><code>process_cmd.sql</code>: This is DDL script for <code>PROCESS_CMD</code> table.</li>
+<li><code>process_log_seq.sql</code>: This script creates a sequence, needed for <code>PROCESS_LOG</code> table.</li>
+<li><code>process_log.sql</code>: This is DDL script for <code>PROCESS_LOG</code> table.</li>
+<li><code>process_dq_test.sql</code>: This is DDL script for <code>PROCESS_DQ_TEST</code> table. This script also populates standard DQ Test data shipped with the code.</li>
+<li><code>process_cmd_tgt_dq_test.sql</code>: This is DDL script for <code>PROCESS_CMD_TGT_DQ_TEST</code> table.</li>
+<li><code>process_dq_log.sql</code>: This is DDL script for <code>PROCESS_DQ_LOG</code> table.</li>
+<li><code>vw_process_log.sql</code> [optional]: This is script for a view to be built on PROCESS_LOG table. It flattens out the JSON Log into tabular rows for easier interpretation from within the database.</li>
+<li><code>tips_internal_stage.sql</code>: This script creates an internal named stage, which would need to upload our code base, which is referenced by stored procedure.</li>
+</ol>
+<p>Also, inside <code>stored_procedure_stub</code> folder, there are couple of scripts available. These are for stored procedures used by TiPS. Please compile <code>create_temporary_table.sql</code> script. This stored procured is needed even when we run TiPS from command line (using Snowpark Client API) </p>
+<p>Now that we have created Database objects required by TiPS, we are ready to move to the next step to setup our first sample pipeline to test run TiPS.</p>
+<h3 id="setup-sample-data-pipeline-optional">Setup Sample Data Pipeline [optional]</h3>
+<p>To see TiPS in action after the setup, you can follow the steps below to setup a trial data pipeline without having to write any code yourself.</p>
+<p>For setting up a trial data pipeline, we have supplied with SQL scripts that you can run on your Snowflake account. These scripts are in sample_pipeline folder under test folder, within this repository.</p>
+<h4 id="schema-scripts">Schema Script(s)</h4>
+<p>There are couple of scripts in "test -&gt; sample_pipeline -&gt; schema" folder. Please run these scripts to create two schemas where would setup tables and views for our pipeline. Please run both <code>tips_test_dimension.sql</code> and <code>tips_test_transform.sql</code> scripts.</p>
+<h4 id="sequence-scripts">Sequence Script(s)</h4>
+<p>Next, please run the scripts available in "test -&gt; sample_pipeline -&gt; sequence" folder.</p>
+<h4 id="table-ddl-scripts">Table DDL Script(s)</h4>
+<p>Next, please run the scripts available in "test -&gt; sample_pipeline -&gt; table" folder.</p>
+<h4 id="view-scripts">View Script(s)</h4>
+<p>Next, please run the scripts available in "test -&gt; sample_pipeline -&gt; view" folder.</p>
+<h4 id="metadata-scripts">Metadata Script(s)</h4>
+<p>Finally, for setup of data pipeline, run the script available in "test -&gt; sample_pipeline -&gt; metadata" folder. This script sets up TiPS metadata needed for execution of data pipeline.</p>
+<h3 id="execute-data-pipeline-using-snowpark-client-api">Execute Data Pipeline (using Snowpark Client API)</h3>
+<p>Now that you have setup a trial data pipeline using table/views and metadata, it is now a good time to test whether TiPS is working as expected.</p>
+<p>To do that please follow the steps below:</p>
+<p>First, we need to setup a file with your database credentials that TiPS would use to connect to your Snowflake instance. To do that, inside <code>test</code> folder, create a file named <code>.env</code> (There is no filename, just the extension. This file is already configured to be ignored from getting pushed to Git repository). Once you have the file in <code>test</code> folder, open it in any of your favourite text editor and add your database credentials as below (change the values appropriate to your account between <code>&lt;&lt;&gt;&gt;</code>):</p>
+<pre><code>SF_ACCOUNT=&lt;&lt;Snowflake Account ID&gt;&gt;
+SF_USER=&lt;&lt;Snowflake User ID&gt;&gt;
+SF_PASSWORD=&lt;&lt;Your Snowflake Password&gt;&gt;
+SF_ROLE=&lt;&lt;Snowflake Role to use&gt;&gt; 
+SF_WAREHOUSE=&lt;&lt;Snowflake Warehouse to use&gt;&gt;
+SF_DATABASE=&lt;&lt;Snowflake Database to connect to&gt;&gt;
+SF_SCHEMA=&lt;&lt;Snowflake schema where TiPS metadata information has been setup&gt;&gt;
+</code></pre>
+<p>For executing TiPS from command line using Snowpark Client API, we will run it with <code>run_process_log.py</code> which is available inside test folder. However, before we run that, we would need to set an environment variable on the terminal, for relative paths in imports to work properly. Please use the command below as an example and tweak as necessary according to your folder structure setup and/or OS requirement (below is the example for being run on a Bash terminal)
+you would need to set PYTHONPATH environment variable, with path that of your github folder </p>
+<p>E.g.</p>
+<pre><code>export PYTHONPATH=/c/GitHub/tips-snowpark
+</code></pre>
+<p>Now navigate to test folder, if you are not already in it.</p>
+<pre><code>cd /c/GitHub/tips-snowpark/test
+</code></pre>
+<p>And then to execute the trial pipeline that we have setup in previous steps, you can execute one of the commands below:</p>
+<p><strong><em>Serial Execution</em> (Step executed serially following topolical sorting):</strong></p>
+<pre><code>python run_process_local.py -p TIPS_TEST_PIPELINE -v &quot;{'COBID':'20230101', 'MARKET_SEGMENT':'FURNITURE'}&quot; -e Y
+</code></pre>
+<p><strong><em>Parallel Execution</em> (Step executed parallely utilising Snowflake Tasks):</strong></p>
+<pre><code>python run_process_with_tasks_local.py -p TIPS_TEST_PIPELINE -v &quot;{'COBID':'20230101', 'MARKET_SEGMENT':'FURNITURE'}&quot; -e Y
+</code></pre>
+<p>With parameters:</p>
+<ul>
+<li>-p -&gt; We are passing in Data Pipeline Name that we have setup in previous steps.</li>
+<li>-v -&gt; Here we are passing in the bind variable values in JSON format, that are used by our pipeline. This is an optional parameter and is only required when bind variables are used in the pipeline.</li>
+<li>-e -&gt; Here we pass in Y/N flag, for indicating whether we want to execute the SQLs generated by TiPS or want to generate the SQLs and outputted for debugging purpose. If Y is passed, then generated SQLs are executed on the database. If N is passed, then generated SQLs are only outputted to the log and are not executed in the database.</li>
+</ul>
+<p>Once the above command is executed and if everything has been setup correctly, you should start seeing the log messages on terminal window displaying how execution of pipeline is progressing. You should also notice a <code>log</code> folder created inside <code>test</code> folder, where log files are generated.</p>
+<p><em><strong><u>Please Note</strong></u>: Parallel execution relies on parent_process_cmd_id column setting in PROCESS_CMD table. Further details about this column can be checked in <a href="../reference/">Reference Guide</a></em></p>
+<h3 id="execute-data-pipeline-inside-snowflake-with-stored-procedure">Execute Data Pipeline (inside Snowflake with Stored Procedure)</h3>
+<p>So, if you have reached this step, presumably everything with setting things up, has worked as expected. This step is needed, if you want to run the data pipelines from inside the database, executing via stored procedure. The advantage of running it with Stored procedure are:</p>
+<ol>
+<li>Stored procedure runs with owner privileges. So, the user executing it, doesn't need read/write privileges on underlying database objects. Only execution privilege is required on the stored procedure.</li>
+<li>Everything runs inside the database, so data doesn't leave the data platform.</li>
+<li>Once the setup is done, other users/tools can execute data pipelines without needing Python or other setup that we needed to do in steps above.</li>
+</ol>
+<p>Before we compile the stored procedure, we would need to upload TiPS core code to Snowflake internal stage, that we created in step <a href="#setup-database-objects">above</a>.</p>
+<h4 id="package-tips-code-as-a-zip-file-and-upload-to-a-stage">Package TiPS code as a zip file and upload to a stage</h4>
+<p>There is a "tips" folder inside the repository. Bundle this folder with its content to a zip file (preferably named as <code>tips.zip</code>). If you are on windows, you can easily do that from file explorer, by navigating to repository folder and then right click on <strong>tips</strong> folder and select "compress to zip file" option (or "send to compressed file" on previous versions of windows). This should produce <code>tips.zip</code> file inside your repository folder.</p>
+<h4 id="compile-run_process-stored-procedure">Compile RUN_PROCESS stored procedure</h4>
+<p>RUN_PROCESS stored procedure is used to execute data pipelines in serial mode. To create this stored procedure, please execute the script <code>run_process.sql</code>, which is available inside stored_procedure_stub folder.</p>
+<h4 id="compile-run_process_with_tasks-stored-procedure">Compile RUN_PROCESS_WITH_TASKS stored procedure</h4>
+<p>RUN_PROCESS_WITH_TASKS stored procedure is used to execute data pipelines in parallel mode. To create this stored procedure, please execute the script <code>run_process_with_tasks.sql</code>, which is also available inside stored_procedure_stub folder.</p>
+<h4 id="execute-data-pipeline">Execute Data Pipeline</h4>
+<p>Now that stored procedures are compiled in the database, you can execute data pipelines with TiPS directly inside from Snowflake like any other stored procedure. For example, to run the sample pipeline, you can run one of the following commands from within Snowflake IDE:</p>
+<p><strong><em>Serial Execution</em> (Step executed serially following topolical sorting):</strong></p>
+<pre><code>call run_process(process_name=&gt;'TIPS_TEST_PIPELINE', vars=&gt;'{&quot;COBID&quot;:&quot;20230101&quot;, &quot;MARKET_SEGMENT&quot;:&quot;FURNITURE&quot;}', execute_flag=&gt;'Y')
+</code></pre>
+<p><strong><em>Parallel Execution</em> (Step executed parallely utilising Snowflake Tasks):</strong></p>
+<pre><code>call run_process_with_tasks(process_name=&gt;'TIPS_TEST_PIPELINE', vars=&gt;'{&quot;COBID&quot;:&quot;20230101&quot;, &quot;MARKET_SEGMENT&quot;:&quot;FURNITURE&quot;}', execute_flag=&gt;'Y')
+</code></pre>
+<p><em><strong><u>Please Note</strong></u>: Parallel execution relies on parent_process_cmd_id column setting in PROCESS_CMD table. Further details about this column can be checked in <a href="../reference/">Reference Guide</a></em></p>
+<p>In both the commands above, parameter values are passed in named-parameter way, but you can just pass in values in positional way, without explicitly specifying parameter name. Also, <code>var</code> parameter value is needed in JSON format where bind variables are used in the pipeline. If bind variables are not used, just pass in <code>NULL</code> instead.</p>
+<p>All Done! You are now set to start using TiPS in its full swing. Please do checkout <a href="../tips_conventions/">TiPS Conventions</a> and <a href="../reference/">Reference Guide</a> for further useful information.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 ProjectiveGroup UK
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant", "navigation.top"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
+      
+        <script src="../javascripts/tablesort.js"></script>
+      
+    
+  </body>
+</html>
